@@ -1,0 +1,7 @@
+<div class="control-group">
+    <label class="control-label">{{ _('Protocol') }}</label>
+    <select data-bind="uniqueName: console.log($data), value: settings.plugins.GPX.protocol">
+        <option value="gcode">{{ _('G-Code') }}</option>
+        <option value="GPX">{{ _('x3g (via GPX)') }}</option>
+    </select>
+</div>
