@@ -68,6 +68,19 @@ def params():
 		"octoprint.plugin": ["%s = %s" % (plugin_identifier, plugin_package)]
 	}
 
+	ext_modules = [
+		setuptools.Extension('gpx',
+		sources = [
+			'GPX/src/pymodule/gpxmodule.c',
+			'GPX/src/shared/config.c',
+			'GPX/src/shared/opt.c',
+			'GPX/src/gpx/gpx.c',
+			'GPX/src/gpx/gpx-main.c',
+			],
+		extra_compile_args = ['-DSERIAL_SUPPORT', '-fvisibility=hidden', '-IGPX/src/shared', '-IGPX/src/gpx'],
+		extra_link_args = ['-fvisibility=hidden'])
+		]
+
 	return locals()
 
 setuptools.setup(**params())
