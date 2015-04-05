@@ -58,12 +58,18 @@ class GpxPrinter():
 				self.outgoing.put('')
 				pass
 				return
-		self._append(gpx.write("%s" % data))
+		while True:
+			try:
+				self._append(gpx.write("%s" % data))
+				break
+			except gpx.BufferOverflow:
+				self._append("wait")
+				pass
 
 	def readline(self):
 		while (self.baudrateError):
 			if (self._baudrate != self.baudrate):
-				self.write("M105");
+				self.write("M105")
 			return ''
 		try:
 			s = self.outgoing.get_nowait()
