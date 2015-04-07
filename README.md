@@ -27,12 +27,13 @@ You may want to test that it still works at this point.  Well, works in that the
 source ~/oprint/bin/activate
 octoprint
 ```
-<Ctrl-C> kills it
+*\<Ctrl-C\>* kills it
 
 * Get the GPX module
 ```
 cd ~
 git clone https://github.com/markwal/OctoPrint-GPX
+git submodule update --init
 ~/oprint/bin/python setup.py install
 ```
 * Run OctoPrint
