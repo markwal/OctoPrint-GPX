@@ -1,0 +1,3 @@
+[submodule "GPX"]
+	path = GPX
+	url = https://github.com/markwal/GPX
