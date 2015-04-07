@@ -9,17 +9,15 @@ import Queue
 
 from octoprint.settings import settings
 
-gpxAvailable = False
 try:
 	import gpx
-	gpxAvailable = True
 except:
 	pass
 
 class GpxPrinter():
 	def __init__(self, port = None, baudrate = None, timeout = 0):
 		self._logger = logging.getLogger(__name__)
-		if not gpxAvailable:
+		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
 		if baudrate == 0:
@@ -31,7 +29,7 @@ class GpxPrinter():
 		self.outgoing = Queue.Queue()
 		self.baudrateError = False;
 		try:
-			self._append(gpx.connect(port, baudrate, settings().getBaseFolder("plugins") + "/gpx.ini")) #, settings().getBaseFolder("logs") + "/gpx.log")
+			self._append(gpx.connect(port, baudrate, settings().getBaseFolder("plugins") + "/gpx.ini", settings().getBaseFolder("logs") + "/gpx.log"))
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
 			raise
@@ -43,7 +41,7 @@ class GpxPrinter():
 
 	def write(self, data):
 		data = data.strip()
-		self._logger.info("%s" % data)
+		self._logger.debug("%s" % data)
 		# strip checksum
 		if "*" in data:
 			data = data[:data.rfind("*")]
@@ -73,17 +71,17 @@ class GpxPrinter():
 			return ''
 		try:
 			s = self.outgoing.get_nowait()
-			self._logger.info("readline: %s" % s)
+			self._logger.debug("readline: %s" % s)
 			return s
 		except Queue.Empty:
 			pass
 		self._append(gpx.readnext())
 		try:
 			s = self.outgoing.get(timeout=self.timeout)
-			self._logger.info("readline: %s" % s)
+			self._logger.debug("readline: %s" % s)
 			return s
 		except Queue.Empty:
-			self._logger.info("timeout")
+			self._logger.debug("timeout")
 			pass
 		return ''
 

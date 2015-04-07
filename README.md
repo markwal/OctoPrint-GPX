@@ -52,3 +52,4 @@ The GCode viewer can't follow along the build because it doesn't have a good way
 Octoprint expects the g-code to be Reprap style.  I haven't run accross all of the difficulties with this, but one is that when it runs across M109 it jumps to the wrong conclusion about what's going to happen next.
 I really wouldn't recommend printing directly from the gcode file rather than an x3g on the SD card.  Besides Sailfish recommends against anything but SD, there's also the fact that this is fairly Alpha code and you wouldn't want a communications glitch to ruin your print several hours in. And I expect one.  More than likely pretty quickly, but worst case, just before the build is done. 
 
+Oh yeah, at the moment, its pretty piggy with the log file.  Default location is ~/.octoprint/logs/gpx.log.  You might want to delete that from time to time.
