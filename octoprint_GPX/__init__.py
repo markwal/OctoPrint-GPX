@@ -25,7 +25,7 @@ class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin
 		self._logger.info("GPXPlugin startup!")
 
 	def get_settings_defaults(self):
-		return dict(protocol="gcode")
+		return dict(protocol="GPX")
 
 	def get_template_configs(self):
 		return [
