@@ -29,7 +29,10 @@ class GpxPrinter():
 		self.outgoing = Queue.Queue()
 		self.baudrateError = False;
 		try:
-			self._append(gpx.connect(port, baudrate, settings().getBaseFolder("plugins") + "/gpx.ini", settings().getBaseFolder("logs") + "/gpx.log"))
+			self._append(gpx.connect(port, baudrate,
+				settings().getBaseFolder("plugins") + "/gpx.ini", 
+				settings().getBaseFolder("logs") + "/gpx.log", 
+				self._logger.getEffectiveLevel() == logging.DEBUG))
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
 			raise
