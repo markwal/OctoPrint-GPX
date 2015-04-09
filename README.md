@@ -40,6 +40,14 @@ git submodule update --init
 ```
 sudo service octoprint start
 ```
+
+* Create a gpx.ini
+You want the gpx.ini to have the settings for your printer.  If you already use gpx with your slicer, copy it from there.  Otherwise, copy it from the GPX folder.  It goes in ~/.octoprint/plugins.
+```
+mkdir ~/.octoprint/plugins
+cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/plugins
+```
+
 * Turn on the GPX plug in
 From the octoprint UI: choose settings from the navbar at the top, then GPX from the bottom left, then switch from G-Code to GPX in the protocol, hit save.
 
