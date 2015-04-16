@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import octoprint.plugin
 
 class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin):
-	def serial_handler(self, comm, port, baudrate, timeout):
+	def serial_factory(self, comm, port, baudrate, timeout):
 		if self._settings.get(["protocol"]) != "GPX":
 			return None
 
@@ -17,6 +17,13 @@ class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin
 		except Exception as e:
 			self._logger.info("Failed to connect to x3g e = %s." % e);
 			raise
+
+	def get_extension_tree(self):
+		return dict(
+			machinecode=dict(
+				x3g=["x3g", "s3g"]
+			)
+		)
 		
 	def get_settings_defaults(self):
 		return dict(protocol="GPX")
@@ -37,4 +44,7 @@ def __plugin_load__():
 	__plugin_implementation__ = plugin
 
 	global __plugin_hooks__
-	__plugin_hooks__ = {"octoprint.comm.protocol.serial": plugin.serial_handler}
+	__plugin_hooks__ = {
+			"octoprint.comm.transport.serial.factory": plugin.serial_factory,
+			"octoprint.filemanager.extension_tree": plugin.get_extension_tree
+		}
