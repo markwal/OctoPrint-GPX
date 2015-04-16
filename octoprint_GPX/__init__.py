@@ -10,20 +10,14 @@ class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin
 
 		self._logger.info("Connecting through x3g.")
 		try:
-			if port is None or port == 'AUTO':
-				port = comm.detectPort(True)
-				if port is None:
-					return None
-			self._logger.info("calling constructor %s %ld" % (port, baudrate))
+			if port is None or port == 'AUTO' or baudrate is None or baudrate == 0:
+				raise IOError("AUTO port and baudrate not currently supported by GPX")
 			from .gpxprinter import GpxPrinter
 			return GpxPrinter(port, baudrate, timeout)
 		except Exception as e:
 			self._logger.info("Failed to connect to x3g e = %s." % e);
 			raise
 		
-	def on_after_startup(self):
-		self._logger.info("GPXPlugin startup!")
-
 	def get_settings_defaults(self):
 		return dict(protocol="GPX")
 
@@ -36,7 +30,7 @@ class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin
 __plugin_implementation__ = GPXPlugin()
 
 
-def __plugin_init__():
+def __plugin_load__():
 	plugin = GPXPlugin()
 
 	global __plugin_implementation__

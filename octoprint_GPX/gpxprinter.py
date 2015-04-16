@@ -20,8 +20,6 @@ class GpxPrinter():
 		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
-		if baudrate == 0:
-			raise IOError("AUTO baudrate not currently supported by GPX")
 		self.port = port
 		self.baudrate = self._baudrate = baudrate
 		self.timeout = timeout
