@@ -19,54 +19,55 @@ FlashForge Creator Pro running Sailfish 7.7
    python it'll run the one in ~/oprint/bin/python which will use ~/oprint/lib
    for all package installs and dependencies.  You can tell it is working by the
     "(oprint)" in front of your prompt
-```
-source ~/oprint/bin/activate
-```
+    ```
+    source ~/oprint/bin/activate
+    ```
 
-2. Switch to the devel branch of OctoPrint
+3. Switch to the devel branch of OctoPrint
   (https://github.com/foosel/OctoPrint/wiki/FAQ#how-can-i-switch-the-branch-of-the-octoprint-installation-on-my-octopi-image)
-```
-cd ~/OctoPrint
-git pull & git checkout devel
-python setup.py clean
-python setup.py install
-sudo service octoprint restart
-```
+    ```
+    cd ~/OctoPrint
+    git pull & git checkout devel
+    python setup.py clean
+    python setup.py install
+    sudo service octoprint restart
+    ```
 
-You may want to test that it still works at this point.  Well, works in that
-the web page renders.  You won't be able to connect to your x3g printer yet.
+    You may want to test that it still works at this point.  Well, works in that
+    the web page renders.  You won't be able to connect to your x3g printer yet.
 
-3. Get the GPX plugin
-```
-cd ~
-git clone https://github.com/markwal/OctoPrint-GPX
-cd OctoPrint-GPX
-git submodule update --init
-python setup.py install
-```
+4. Get the GPX plugin
+    ```
+    cd ~
+    git clone https://github.com/markwal/OctoPrint-GPX
+    cd OctoPrint-GPX
+    git submodule update --init
+    python setup.py install
+    ```
 
-4. Create a gpx.ini
-You want the gpx.ini to have the settings for your printer.  If you already use
-gpx with your slicer, copy it from there.  Otherwise, copy it from the GPX
-folder.  It goes in ~/.octoprint/plugins.  I recommend switching the flavor to
-reprap.
-```
-mkdir ~/.octoprint/plugins
-cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/plugins
-```
+5. Create a gpx.ini
+    You want the gpx.ini to have the settings for your printer.  If you already use
+    gpx with your slicer, copy it from there.  Otherwise, copy it from the GPX
+    folder.  It goes in ~/.octoprint/plugins.  I recommend switching the flavor to
+    reprap.
+    ```
+    mkdir ~/.octoprint/plugins
+    cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/plugins
+    ```
 
-5. Restart OctoPrint
-```
-sudo service octoprint restart
-```
+6. Restart OctoPrint
+    ```
+    sudo service octoprint restart
+    ```
 
-6. Turn on the GPX plugin
-By default, it should be on when you install it, but you can check. From the
-octoprint UI: choose settings from the navbar at the top, then GPX from
-the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit save.
+7. Turn on the GPX plugin
+    By default, it should be on when you install it, but you can check. From the
+    octoprint UI: choose settings from the navbar at the top, then GPX from
+    the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit save.
 
-7. Try connecting
-Choose a baudrate.  I don't have AUTO working yet.  115200 works on my bot, but you might want to try slower?
+8. Try connecting
+    Choose a port and baudrate.  I don't have AUTO working yet.  115200 works
+    on my bot, but you might want to try slower?
 
 ## Known issues
 * Upload to SD doesn't work.  It can't work directly because SailFish removed
