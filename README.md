@@ -12,35 +12,40 @@ Raspberry Pi set up via the OctoPi image
 FlashForge Creator Pro running Sailfish 7.7
 
 ## Installing
-* Start with OctoPi: Get your Raspberry Pi up and running by following the instructions on [OctoPi](https://github.com/guysoft/OctoPi)
+1. Start with OctoPi: Get your Raspberry Pi up and running by following the
+   instructions on [OctoPi](https://github.com/guysoft/OctoPi)
 
-* Switch to the devel branch of OctoPrint
+2. Switch to the OctoPi virtual env for python. This means that when you type
+   python it'll run the one in ~/oprint/bin/python which will use ~/oprint/lib
+   for all package installs and dependencies.  You can tell it is working by the
+    "(oprint)" in front of your prompt
+```
+source ~/oprint/bin/activate
+```
+
+2. Switch to the devel branch of OctoPrint
   (https://github.com/foosel/OctoPrint/wiki/FAQ#how-can-i-switch-the-branch-of-the-octoprint-installation-on-my-octopi-image)
 ```
 cd ~/OctoPrint
 git pull & git checkout devel
-~/oprint/bin/python setup.py clean
-~/oprint/bin/python setup.py install
+python setup.py clean
+python setup.py install
 sudo service octoprint restart
 ```
 
-You may want to test that it still works at this point.  Well, works in that the web page renders.  You won't be able to connect to your x3g printer yet.  To make sure OctoPrint runs:
+You may want to test that it still works at this point.  Well, works in that
+the web page renders.  You won't be able to connect to your x3g printer yet.
 
-* Get the GPX plugin
+3. Get the GPX plugin
 ```
 cd ~
 git clone https://github.com/markwal/OctoPrint-GPX
 cd OctoPrint-GPX
 git submodule update --init
-~/oprint/bin/python setup.py install
+python setup.py install
 ```
 
-* Restart OctoPrint
-```
-sudo service octoprint restart
-```
-
-* Create a gpx.ini
+4. Create a gpx.ini
 You want the gpx.ini to have the settings for your printer.  If you already use
 gpx with your slicer, copy it from there.  Otherwise, copy it from the GPX
 folder.  It goes in ~/.octoprint/plugins.  I recommend switching the flavor to
@@ -50,11 +55,17 @@ mkdir ~/.octoprint/plugins
 cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/plugins
 ```
 
-* Turn on the GPX plugin
-From the octoprint UI: choose settings from the navbar at the top, then GPX from
-the bottom left, then switch from G-Code to GPX in the protocol, hit save.
+5. Restart OctoPrint
+```
+sudo service octoprint restart
+```
 
-* Try connecting
+6. Turn on the GPX plugin
+By default, it should be on when you install it, but you can check. From the
+octoprint UI: choose settings from the navbar at the top, then GPX from
+the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit save.
+
+7. Try connecting
 Choose a baudrate.  I don't have AUTO working yet.  115200 works on my bot, but you might want to try slower?
 
 ## Known issues
