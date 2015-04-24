@@ -5,7 +5,7 @@ import octoprint.plugin
 
 class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin):
 	def serial_factory(self, comm, port, baudrate, timeout):
-		if self._settings.get(["protocol"]) != "GPX":
+		if self._settings.get(["protocol"]) != "GPX" or port == 'VIRTUAL':
 			return None
 
 		self._logger.info("Connecting through x3g.")
