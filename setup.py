@@ -5,7 +5,7 @@ import setuptools
 
 plugin_identifier = "GPX"
 plugin_package = "octoprint_%s" % plugin_identifier
-plugin_name = "OctoPrint GPX"
+plugin_name = "OctoPrint-GPX"
 plugin_version = "0.1"
 plugin_description = "Emulates the gcode printer protocol by translating to/from x3g."
 plugin_author = "Mark Walker"
