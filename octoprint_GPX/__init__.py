@@ -34,9 +34,6 @@ class GPXPlugin(octoprint.plugin.TemplatePlugin, octoprint.plugin.SettingsPlugin
 		]
 
 
-__plugin_implementation__ = GPXPlugin()
-
-
 def __plugin_load__():
 	plugin = GPXPlugin()
 
@@ -48,3 +45,5 @@ def __plugin_load__():
 			"octoprint.comm.transport.serial.factory": plugin.serial_factory,
 			"octoprint.filemanager.extension_tree": plugin.get_extension_tree
 		}
+
+__plugin_name__ = "GPX"
