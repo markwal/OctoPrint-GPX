@@ -1,0 +1,4 @@
+include *.txt
+recursive-include octoprint_GPX *.js *.jinja2 *.less *.css
+recursive-include GPX *
+global-exclude *_obj/* *build/*
