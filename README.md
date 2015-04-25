@@ -15,10 +15,12 @@ FlashForge Creator Pro running Sailfish 7.7
 1. Start with OctoPi: Get your Raspberry Pi up and running by following the
    instructions on [OctoPi](https://github.com/guysoft/OctoPi)
 
-2. Switch to the OctoPi virtual env for python. This means that when you type
-   python it'll run the one in ~/oprint/bin/python which will use ~/oprint/lib
-   for all package installs and dependencies.  You can tell it is working by the
-    "(oprint)" in front of your prompt
+2. OctoPi runs OctoPrint in a virtualenv. You'll want to switch to the
+   virtualenv for installing packages so they'll be available to OctoPrint.
+   Activating the environment means that when you type python or pip, it'll use
+   the ones out of ~/oprint/bin and use ~/oprint/lib for all package installs
+   and dependencies.  You can tell it is working by the "(oprint)" in front of
+   your prompt
     ```
     source ~/oprint/bin/activate
     ```
@@ -36,13 +38,17 @@ FlashForge Creator Pro running Sailfish 7.7
     You may want to test that it still works at this point.  Well, works in that
     the web page renders.  You won't be able to connect to your x3g printer yet.
 
-4. Get the GPX plugin
+4. Get the GPX plugin. This will run the bits I most recently released:
+    ```
+    pip install https://markwal.github.io/OctoPrint/OctoPrint-GPX.tar.gpx
+    ```
+    Or, if you'd rather run from source:
     ```
     cd ~
     git clone https://github.com/markwal/OctoPrint-GPX
     cd OctoPrint-GPX
     git submodule update --init
-    python setup.py install
+    python setup.py develop
     ```
 
 5. Create a gpx.ini
@@ -76,6 +82,10 @@ FlashForge Creator Pro running Sailfish 7.7
 * Can't delete SD files for a similar reason
 * OctoPrint gets confused sometimes when using the LCD panel to make changes,
   we'll work on making it more robust
+* Can't cancel from OctoPrint when waiting for temperature during print. This
+  is really an issue with the way OctoPrint expects reprap printers to work. If
+  they are reporting "wait", no commands are sent to the printer.  I'm working on
+  a workaround.
 * Octoprint expects the g-code to be Reprap style.  I haven't run accross all of
   the difficulties with this, but one is that when it runs across M109 it jumps
   to the wrong conclusion about what's going to happen next.
