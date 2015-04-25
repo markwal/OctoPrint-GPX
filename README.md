@@ -82,10 +82,6 @@ FlashForge Creator Pro running Sailfish 7.7
 * Can't delete SD files for a similar reason
 * OctoPrint gets confused sometimes when using the LCD panel to make changes,
   we'll work on making it more robust
-* Can't cancel from OctoPrint when waiting for temperature during print. This
-  is really an issue with the way OctoPrint expects reprap printers to work. If
-  they are reporting "wait", no commands are sent to the printer.  I'm working on
-  a workaround.
 * Octoprint expects the g-code to be Reprap style.  I haven't run accross all of
   the difficulties with this, but one is that when it runs across M109 it jumps
   to the wrong conclusion about what's going to happen next.
