@@ -84,7 +84,7 @@ class GpxPrinter():
 		append_later = None
 		if 'wait' in s:
 			append_later = s
-			timeout = 1
+			timeout = 2
 		else:
 			self._append(s)
 		try:
