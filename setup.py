@@ -11,10 +11,8 @@ plugin_description = "Emulates the gcode printer protocol by translating to/from
 plugin_author = "Mark Walker"
 plugin_author_email = "markwal@hotmail.com"
 plugin_url = "http://github.com/markwal/OctoPrint-GPX"
-plugin_license = "MIT"
+plugin_license = "AGPLv3"
 
-# Additional package data to install for this plugin. The subfolders "templates", "static" and "translations" will
-# already be installed automatically if they exist.
 plugin_additional_data = []
 
 ########################################################################################################################
