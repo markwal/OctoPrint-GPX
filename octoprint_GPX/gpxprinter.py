@@ -76,12 +76,21 @@ class GpxPrinter():
 			return s
 		except Queue.Empty:
 			pass
-		self._append(gpx.readnext())
+		s = gpx.readnext()
+		timeout = self.timeout
+		append_later = None
+		if 'wait' in s:
+			append_later = s
+			timeout = 1
+		else:
+			self._append(s)
 		try:
-			s = self.outgoing.get(timeout=self.timeout)
+			s = self.outgoing.get(timeout=timeout)
 			self._logger.debug("readline: %s" % s)
 			return s
 		except Queue.Empty:
+			if append_later is not None:
+				self._append(append_later)
 			self._logger.debug("timeout")
 			pass
 		return ''
