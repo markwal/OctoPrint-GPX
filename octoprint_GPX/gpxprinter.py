@@ -15,8 +15,11 @@ except:
 	pass
 
 class GpxPrinter():
-	def __init__(self, port = None, baudrate = None, timeout = 0):
-		self._logger = logging.getLogger(__name__)
+	def __init__(self, logger = None, port = None, baudrate = None, timeout = 0):
+		if logger is None:
+			self._logger = logging.getLogger(__name__)
+		else:
+			self._logger = logger
 		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
