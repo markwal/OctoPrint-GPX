@@ -9,7 +9,7 @@ class GPXPlugin(
 		octoprint.plugin.SettingsPlugin,
 		octoprint.plugin.EventHandlerPlugin
 		):
-	def serial_factory(self, comm, port, baudrate, timeout):
+	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
 		if self._settings.get(["protocol"]) != "GPX" or port == 'VIRTUAL':
 			return None
 
@@ -24,7 +24,7 @@ class GPXPlugin(
 			self._logger.info("Failed to connect to x3g e = %s." % e);
 			raise
 
-	def get_extension_tree(self):
+	def get_extension_tree(self, *args, **kwargs):
 		return dict(
 			machinecode=dict(
 				x3g=["x3g", "s3g"]
