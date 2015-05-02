@@ -45,7 +45,7 @@ class GPXPlugin(
 		self.iniparser = IniParser(profile_path, self._logger)
 
 	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
-		if self._settings.get(["protocol"]) != "GPX" or port == 'VIRTUAL':
+		if self._settings.getBoolean(["enabled"]) or port == 'VIRTUAL':
 			return None
 
 		self._logger.info("Connecting through x3g.")
