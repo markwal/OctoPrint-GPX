@@ -3,11 +3,10 @@ from __future__ import absolute_import
 __author__ = "Mark Walker <markwal@hotmail.com> based on work by Gina Häußge" 
 __license__ = 'GNU Affero General Public License http://www.gnu.org/licenses/agpl.html'
 
+import os
 import logging
 import time
 import Queue
-
-from octoprint.settings import settings
 
 try:
 	import gpx
@@ -15,11 +14,12 @@ except:
 	pass
 
 class GpxPrinter():
-	def __init__(self, logger = None, port = None, baudrate = None, timeout = 0):
+	def __init__(self, logger = None, settings = None, port = None, baudrate = None, timeout = 0):
 		if logger is None:
 			self._logger = logging.getLogger(__name__)
 		else:
 			self._logger = logger
+		self._settings = settings
 		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
@@ -29,10 +29,13 @@ class GpxPrinter():
 		self._logger.info("GPXPrinter created, port: %s, baudrate: %s" % (self.port, self.baudrate))
 		self.outgoing = Queue.Queue()
 		self.baudrateError = False;
+		profile_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
+		if not os.path.isdir(profile_folder):
+			os.makedirs(profile_folder)
+		profile_path = os.path.join(profile_folder, "gpx.ini")
+		log_path = os.path.join(self._settings.global_get_basefolder("logs"), "gpx.log")
 		try:
-			self._append(gpx.connect(port, baudrate,
-				settings().getBaseFolder("plugins") + "/gpx.ini", 
-				settings().getBaseFolder("logs") + "/gpx.log", 
+			self._append(gpx.connect(port, baudrate, profile_path, log_path,
 				self._logger.getEffectiveLevel() == logging.DEBUG))
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
