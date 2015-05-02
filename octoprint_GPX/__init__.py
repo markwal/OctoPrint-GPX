@@ -125,9 +125,7 @@ class GPXPlugin(
 		for sectionname, section in incoming.items():
 			if sectionname in defaults:
 				for option, value in section.items():
-					print sectionname, option, value
 					if option in defaults[sectionname]:
-						print defaults[sectionname][option]
 						if value == 'undefined':
 							incoming[sectionname][option] = ''
 							continue
@@ -152,9 +150,13 @@ class GPXPlugin(
 	def ini_massage_out(self, ini):
 		heated = False
 		if "a" in ini and "has_heated_build_platform" in ini["a"]:
+			if "machine" not in ini:
+				ini["machine"] = OrderedDict()
 			heated = ini["machine"]["has_heated_build_platform"] = ini["a"]["has_heated_build_platform"]
 			del ini["a"]["has_heated_build_platform"]
 		if "b" in ini and ini["b"].get("has_heated_build_platform"):
+			if "machine" not in ini:
+				ini["machine"] = OrderedDict()
 			ini["machine"]["has_heated_build_platform"] = heated or ini["b"]["has_heated_build_platform"]
 			del ini["b"]["has_heated_build_platform"]
 		return ini
@@ -181,8 +183,8 @@ class GPXPlugin(
 			ini = self.iniparser.read()
 		except IOError:
 			self._logger.info("Unable to read %s, using defaults." % self.iniparser.filename)
-			ini = {}
-			ini["printer"] = {}
+			ini = OrderedDict()
+			ini["printer"] = OrderedDict()
 			ini["printer"]["machine_type"] = "r2"
 		return flask.jsonify(self.ini_massage_out(ini))
 
@@ -197,6 +199,7 @@ class GPXPlugin(
 			return make_response("Malformed JSON body in request", 400)
 		self.iniparser.update(ini)
 		self.iniparser.dump()
+		self.iniparser.write()
 		return ('', 200)
 
 
