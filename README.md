@@ -52,14 +52,22 @@ FlashForge Creator Pro running Sailfish 7.7
     ```
 
 5. Create a gpx.ini
-    You want the gpx.ini to have the settings for your printer.  If you already use
-    gpx with your slicer, copy it from there.  Otherwise, copy it from the GPX
-    folder.  It goes in ~/.octoprint/plugins.  I recommend switching the flavor to
-    reprap.
+    You want the gpx.ini to have the settings for your printer.  If you already
+    use gpx with your slicer, copy it from there.  Otherwise, copy it from the
+    GPX folder.  It goes in ~/.octoprint/gpxProfiles.  I recommend switching
+    the flavor to reprap.
     ```
-    mkdir ~/.octoprint/plugins
-    cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/plugins
+    mkdir ~/.octoprint/gpxProfiles
+    cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/gpxProfiles
     ```
+    Actually, the newest version will create a gpx.ini there the first time you
+    save settings. 1. Click settings on the OctoPrint bar; 2. Choose GPX on the
+    lower left; 3. Choose your machine type and make sure "Enable GPX" is
+    checked and "Gcode flavor" says "RepRap"; 4. Click "Save" (bottom right)
+    
+    The rest only matters when printing gcode directly from OctoPrint and you
+    should really print from SD. Trigger the print from OctoPrint so you get
+    your timelapse and monitoring, but choose a file from the SD card.
 
 6. Restart OctoPrint
     ```
@@ -67,9 +75,10 @@ FlashForge Creator Pro running Sailfish 7.7
     ```
 
 7. Turn on the GPX plugin
-    By default, it should be on when you install it, but you can check. From the
-    octoprint UI: choose settings from the navbar at the top, then GPX from
-    the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit save.
+    By default, it should be on when you install it, but you can check. From
+    the octoprint UI: choose settings from the navbar at the top, then GPX from
+    the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit
+    save.
 
 8. Try connecting
     Choose a port and baudrate.  I don't have AUTO working yet.  115200 works
@@ -82,7 +91,7 @@ FlashForge Creator Pro running Sailfish 7.7
 * Can't delete SD files for a similar reason
 * OctoPrint gets confused sometimes when using the LCD panel to make changes,
   we'll work on making it more robust
-* Octoprint expects the g-code to be Reprap style.  I haven't run accross all of
+* Octoprint expects the g-code to be Reprap style.  I haven't run across all of
   the difficulties with this, but one is that when it runs across M109 it jumps
   to the wrong conclusion about what's going to happen next.
 * I really wouldn't recommend printing directly from the gcode file rather than
@@ -90,7 +99,8 @@ FlashForge Creator Pro running Sailfish 7.7
   there's also the fact that this is fairly Alpha code and you wouldn't want a
   communications glitch to ruin your print several hours in. And I expect one.
   More than likely pretty quickly, but worst case, just before the build is
-  done. 
+  done. (Although I have successfully printed a Linkling directly from OctoPrint
+  just as a test.)
 * Oh yeah, at the moment, its pretty piggy with the log file.  Default location
   is ~/.octoprint/logs/gpx.log.  You might want to delete that from time to
   time.
@@ -104,4 +114,7 @@ the the bot.
 The GCode viewer can't follow along the build on the SD card because it doesn't
 have a good way to understand where the bot is in printing an x3g file.  I'm
 thinking about this one.  Perhaps we can use the number of commands processed to
-line something up.
+line something up. I have the printer reporting current position back to
+OctoPrint every second or so now, so theoretically it could follow along-ish on
+z-change, but it'd be guessing about the pacing in between. It'd require a new
+hook or something in OctoPrint.
