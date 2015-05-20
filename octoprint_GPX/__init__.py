@@ -53,7 +53,7 @@ class GPXPlugin(
 			if port is None or port == 'AUTO' or baudrate is None or baudrate == 0:
 				raise IOError("AUTO port and baudrate not currently supported by GPX")
 			from .gpxprinter import GpxPrinter
-			self.printer = GpxPrinter(self._logger, self._settings, port, baudrate, timeout)
+			self.printer = GpxPrinter(self._logger, self._settings, self._printer, port, baudrate, timeout)
 			return self.printer
 		except Exception as e:
 			self._logger.info("Failed to connect to x3g e = %s." % e);

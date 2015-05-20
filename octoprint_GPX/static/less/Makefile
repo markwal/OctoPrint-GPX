@@ -6,10 +6,10 @@ LESS_FILES = $(wildcard *.less)
 CSS_FILES = $(LESS_FILES:.less=.css)
 CSS_OUTPUT_FILES = $(addprefix $(OUTPUT_DIR)/, $(CSS_FILES))
 
-all: $(CSS_FILES)
+all: $(CSS_OUTPUT_FILES)
 
 clean:
 	$(RM) $(CSS_OUTPUT_FILES)
 
-%.css: %.less
+$(CSS_OUTPUT_FILES): $(LESS_FILES)
 	$(LESSC) $< > $(OUTPUT_DIR)/$@

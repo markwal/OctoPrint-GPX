@@ -7,6 +7,7 @@ import os
 import logging
 import time
 import Queue
+import re
 
 try:
 	import gpx
@@ -14,12 +15,13 @@ except:
 	pass
 
 class GpxPrinter():
-	def __init__(self, logger = None, settings = None, port = None, baudrate = None, timeout = 0):
+	def __init__(self, logger = None, settings = None, printer = None, port = None, baudrate = None, timeout = 0):
 		if logger is None:
 			self._logger = logging.getLogger(__name__)
 		else:
 			self._logger = logger
 		self._settings = settings
+		self._printer = printer
 		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
@@ -40,6 +42,7 @@ class GpxPrinter():
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
 			raise
+		self._regex_linenumber = re.compile("N(\d+)")
 
 	def _append(self, s):
 		if (s != ''):
@@ -48,7 +51,6 @@ class GpxPrinter():
 
 	def write(self, data):
 		data = data.strip()
-		self._logger.debug("%s" % data)
 		# strip checksum
 		if "*" in data:
 			data = data[:data.rfind("*")]
@@ -63,13 +65,34 @@ class GpxPrinter():
 				self.outgoing.put('')
 				pass
 				return
+
+		# look for a line number
+		# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
+		# no line number means OctoPrint is generating the gcode (reprap flavor)
+		match = self._regex_linenumber.match(data)
+		if match is not None:
+			lineno = int(match.group(1))
+			if lineno == 1:
+				currentJob = self._printer.get_current_job()
+				if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"]:
+					gpx.write("M136 %s" % os.path.basename(currentJob["file"]["name"]))
+				else:
+					gpx.write("M136")
+
+		# try to talk to the bot
 		while True:
 			try:
+				if match is None:
+					reprapSave = gpx.reprap_flavor(True)
 				self._append(gpx.write("%s" % data))
 				break
 			except gpx.BufferOverflow:
-				self._append("wait")
+				self._append("buffer overflow")
+				time.sleep(1)
 				pass
+			finally:
+				if match is None:
+					gpx.reprap_flavor(reprapSave)
 
 	def readline(self):
 		while (self.baudrateError):
@@ -85,7 +108,7 @@ class GpxPrinter():
 		s = gpx.readnext()
 		timeout = self.timeout
 		append_later = None
-		if 'wait' in s:
+		if gpx.waiting():
 			append_later = s
 			timeout = 2
 		else:
