@@ -85,9 +85,11 @@ FlashForge Creator Pro running Sailfish 7.7
     on my bot, but you might want to try slower?
 
 ## Known issues
-* Upload to SD doesn't work.  It can't work directly because SailFish removed
-  that feature to save bytes.  Probably a good call since who wants to wait for
+* Upload to SD doesn't work. It can't work directly because SailFish removed
+  that feature to save bytes. Probably a good call since who wants to wait for
   115200 baud when you can just plug the SD card into your PC.
+  (Google Groups Post)[https://groups.google.com/d/msg/jetty-firmware/KCIfkv02MPY/SX17OBhXoJMJ]
+  I'm working on FlashAir support
 * Can't delete SD files for a similar reason
 * OctoPrint gets confused sometimes when using the LCD panel to make changes,
   we'll work on making it more robust
@@ -101,6 +103,11 @@ FlashForge Creator Pro running Sailfish 7.7
   More than likely pretty quickly, but worst case, just before the build is
   done. (Although I have successfully printed a Linkling directly from OctoPrint
   just as a test.)
+* Upload to OctoPrint and then print works with .gcode, not with .x3g. Unfortunately,
+  this means MakerBot Desktop doesn't work this route because you can only get x3g
+  out of it easily. You can still use the workflow: export x3g to sd card, take the sd
+  card to the printer, use OctoPi to trigger the print (then you get temp monitoring
+  and timelapse).
 * Oh yeah, at the moment, its pretty piggy with the log file.  Default location
   is ~/.octoprint/logs/gpx.log.  You might want to delete that from time to
   time.
