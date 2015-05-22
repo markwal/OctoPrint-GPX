@@ -1,12 +1,20 @@
 # coding=utf-8
 import setuptools
+import versioneer
+
+# Versioneer config
+versioneer.VCS = 'git'
+versioneer.versionfile_source = 'octoprint_GPX/_version.py'
+versioneer.versionfile_build = 'octoprint_GPX/_version.py'
+versioneer.tag_prefix = ''
+versioneer.parentdir_prefix = ''
 
 ########################################################################################################################
 
 plugin_identifier = "GPX"
 plugin_package = "octoprint_%s" % plugin_identifier
 plugin_name = "OctoPrint-GPX"
-plugin_version = "0.2-a1"
+plugin_version = versioneer.get_version()
 plugin_description = "Emulates the gcode printer protocol by translating to/from x3g."
 plugin_author = "Mark Walker"
 plugin_author_email = "markwal@hotmail.com"
@@ -40,6 +48,7 @@ def params():
 	# Our metadata, as defined above
 	name = plugin_name
 	version = plugin_version
+	cmdclass = versioneer.get_cmdclass()
 	description = plugin_description
 	author = plugin_author
 	author_email = plugin_author_email

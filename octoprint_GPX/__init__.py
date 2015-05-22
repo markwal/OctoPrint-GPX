@@ -216,3 +216,7 @@ def __plugin_load__():
 		}
 
 __plugin_name__ = "GPX"
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
