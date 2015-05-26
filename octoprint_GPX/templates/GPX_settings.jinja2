@@ -16,7 +16,7 @@
                     <option value="c4">{{ _('Cupcake Gen4 XYZ, Mk5/6 + Gen4 Extruder') }}</option>
                     <option value="cp4">{{ _('Cupcake Pololu XYZ, Mk5/6 + Gen4 Extruder') }}</option>
                     <option value="cpp">{{ _('Cupcake Pololu XYZ, Mk5/6 + Pololu Extruder') }}</option>
-                    <option value="ffcp">{{ _('FlashForge Creator Pro') }}</option>
+                    <option value="fcp">{{ _('FlashForge Creator Pro') }}</option>
                     <option value="t6">{{ _('TOM Mk6 - single extruder') }}</option>
                     <option value="t7">{{ _('TOM Mk7 - single extruder') }}</option>
                     <option value="r1">{{ _('Replicator 1 - single extruder') }}</option>
@@ -167,6 +167,7 @@
         </form>
     </div>
     <div class="modal-footer">
+        <button class="btn pull-left" data-bind="click: requestMachineDefaults">{{ _('Reset to default') }}</button>
         <button class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</button>
         <button class="btn btn-primary" data-bind="click: saveMachineSettings">{{ _('Save') }}</button>
     </div>

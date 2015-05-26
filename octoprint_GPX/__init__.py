@@ -69,6 +69,11 @@ class GPXPlugin(
 	def get_settings_defaults(self):
 		return dict(enabled=True)
 
+	def on_settings_save(self, data):
+		super(GPXPlugin, self).on_settings_save(data)
+		if self.printer:
+			self.printer.refresh_ini()
+
 	def on_event(self, event, payload):
 		if event == Events.PRINT_CANCELLED:
 			if self.printer:
@@ -107,19 +112,39 @@ class GPXPlugin(
 			return make_response("Invalid machineid. Upper or lower case letters and numbers only and 8 chars or less")
 		return None
 
+	@octoprint.plugin.BlueprintPlugin.route("/defaultmachine/<string:machineid>", methods=["GET"])
+	def defaultmachine(self, machineid):
+		response = self.validate_machineid(machineid)
+		if response is not None:
+			return response
+		if gpx is None:
+			return None
+		try:
+			machine = gpx.get_machine_defaults(machineid)
+		except ValueError:
+			return make_response("Unknown machine id: %s" % machineid, 404)
+		return flask.jsonify(self.ini_massage_out(machine))
+
 	@octoprint.plugin.BlueprintPlugin.route("/machine/<string:machineid>", methods=["GET"])
 	def machine(self, machineid):
 		response = self.validate_machineid(machineid)
 		if response is not None:
 			return response
-		return flask.jsonify(self.ini_massage_out(self.fetch_machine(machineid)))
+		try:
+			machine = self.fetch_machine(machineid)
+		except ValueError:
+			return make_response("Unknown machine id: %s" % machineid, 404)
+		return flask.jsonify(self.ini_massage_out(machine))
 
 	@octoprint.plugin.BlueprintPlugin.route("/machine/<string:machineid>", methods=["POST"])
 	def putmachine(self, machineid):
 		response = self.validate_machineid(machineid)
 		if response is not None:
 			return response
-		machine_ini = self.fetch_machine_ini(machineid)
+		try:
+			machine_ini = self.fetch_machine_ini(machineid)
+		except ValueError:
+			return make_response("Unknown machine id: %s" % machineid, 404)
 		defaults = gpx.get_machine_defaults(machineid)
 		incoming = self.ini_massage_in(request.json)
 		for sectionname, section in incoming.items():
@@ -130,10 +155,13 @@ class GPXPlugin(
 							incoming[sectionname][option] = ''
 							continue
 						t = type(defaults[sectionname][option])
-						if t == float:
-							value = float(value)
-						elif t == int:
-							value = int(value)
+						try:
+							if t == float:
+								value = float(value)
+							elif t == int:
+								value = int(value)
+						except ValueError:
+							incoming[sectionname][option] = ''
 						if defaults[sectionname][option] == value:
 							# delete the option in the output so the builtin default
 							# will shine through

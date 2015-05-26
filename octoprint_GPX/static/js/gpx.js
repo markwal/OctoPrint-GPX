@@ -124,6 +124,12 @@ $(function() {
             });
         };
 
+        self.requestMachineDefaults = function() {
+            $.getJSON("/plugin/GPX/defaultmachine/" + self.gpx.ini.printer.machine_type(), function(data) {
+                ko.mapping.fromJS(data, self.machine);
+            });
+        };
+
         self.saveMachineSettings = function() {
             var machine = ko.mapping.toJS(self.machine);
             $.ajax({

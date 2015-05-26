@@ -103,11 +103,11 @@ FlashForge Creator Pro running Sailfish 7.7
   More than likely pretty quickly, but worst case, just before the build is
   done. (Although I have successfully printed a Linkling directly from OctoPrint
   just as a test.)
-* Upload to OctoPrint and then print works with .gcode, not with .x3g. Unfortunately,
-  this means MakerBot Desktop doesn't work this route because you can only get x3g
-  out of it easily. You can still use the workflow: export x3g to sd card, take the sd
-  card to the printer, use OctoPi to trigger the print (then you get temp monitoring
-  and timelapse).
+* Upload to OctoPrint and then print works with .gcode, not with .x3g. The GPX
+  layer converts the gcode to x3g when you print from OctoPrint.  I need to
+  figure out a way to make the UI more graceful about this. To review: If the
+  destination is OctoPrint and let it drive: .gcode.  If the destination is the
+  SD card and let the bot drive the print: .x3g.
 * Oh yeah, at the moment, its pretty piggy with the log file.  Default location
   is ~/.octoprint/logs/gpx.log.  You might want to delete that from time to
   time.

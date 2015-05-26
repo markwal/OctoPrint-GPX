@@ -34,15 +34,20 @@ class GpxPrinter():
 		profile_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
 		if not os.path.isdir(profile_folder):
 			os.makedirs(profile_folder)
-		profile_path = os.path.join(profile_folder, "gpx.ini")
+		self.profile_path = os.path.join(profile_folder, "gpx.ini")
 		log_path = os.path.join(self._settings.global_get_basefolder("logs"), "gpx.log")
 		try:
-			self._append(gpx.connect(port, baudrate, profile_path, log_path,
+			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
 				self._logger.getEffectiveLevel() == logging.DEBUG))
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
 			raise
 		self._regex_linenumber = re.compile("N(\d+)")
+
+	def refresh_ini(self):
+		if not self._printer.is_printing() and not self._printer.is_paused():
+			gpx.reset_ini()
+			gpx.read_ini(self.profile_path)
 
 	def _append(self, s):
 		if (s != ''):
