@@ -43,6 +43,7 @@ class GPXPlugin(
 			os.makedirs(profile_folder)
 		profile_path = os.path.join(profile_folder, "gpx.ini")
 		self.iniparser = IniParser(profile_path, self._logger)
+		self.printer = None
 
 	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
 		if not self._settings.get_boolean(["enabled"]) or port == 'VIRTUAL':
