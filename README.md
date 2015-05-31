@@ -40,7 +40,7 @@ FlashForge Creator Pro running Sailfish 7.7
 
 4. Get the GPX plugin. This will run the bits I most recently released:
     ```
-    pip install https://markwal.github.io/OctoPrint/OctoPrint-GPX.tar.gpx
+    pip install https://markwal.github.io/OctoPrint/OctoPrint-GPX.tar.gz
     ```
     Or, if you'd rather run from source:
     ```
