@@ -37,19 +37,19 @@ FlashForge Creator Pro running Sailfish 7.7
 
 4. Get the GPX plugin. You get plugins by using the Plugin Manager in OctoPrint.
 
-    a. Open a browser to octoprint (http://ipaddress/) and login
-    b. Choose "Settings" from the top bar
-    c. Click "Plugin Manager" on the left side
-    d. Click the "Get More..." button
-    e. Find GPX in the list and click "Install"
-    f. Restart octoprint (octopi puts a command on the "System" menu)
-    g. Refresh your browser
+    * Open a browser to octoprint (http://ipaddress/) and login
+    * Choose "Settings" from the top bar
+    * Click "Plugin Manager" on the left side
+    * Click the "Get More..." button
+    * Find GPX in the list and click "Install"
+    * Restart octoprint (octopi puts a command on the "System" menu)
+    * Refresh your browser
 
 5. Set some settings.
 
-    a. Like step 4, get to Settings
-    b. Click "GPX" on the left nav
-    c. Choose your printer type and gcode flavor, leave the rest on default
+    * Like step 4, get to Settings
+    * Click "GPX" on the left nav
+    * Choose your printer type and gcode flavor, leave the rest on default
 
 6. Try connecting
     Choose a port and baudrate.  I don't have AUTO working yet.  115200 works
