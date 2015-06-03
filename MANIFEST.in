@@ -4,3 +4,4 @@ recursive-include GPX *
 global-exclude *_obj/* *build/*
 include versioneer.py
 include octoprint_GPX/_version.py
+include README.md

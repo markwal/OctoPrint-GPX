@@ -35,54 +35,25 @@ FlashForge Creator Pro running Sailfish 7.7
     sudo service octoprint restart
     ```
 
-    You may want to test that it still works at this point.  Well, works in that
-    the web page renders.  You won't be able to connect to your x3g printer yet.
+4. Get the GPX plugin. You get plugins by using the Plugin Manager in OctoPrint.
 
-4. Get the GPX plugin. This will run the bits I most recently released:
-    ```
-    pip install https://markwal.github.io/OctoPrint/OctoPrint-GPX.tar.gz
-    ```
-    Or, if you'd rather run from source:
-    ```
-    cd ~
-    git clone https://github.com/markwal/OctoPrint-GPX
-    cd OctoPrint-GPX
-    git submodule update --init
-    python setup.py develop
-    ```
+    a. Open a browser to octoprint (http://ipaddress/) and login
+    b. Choose "Settings" from the top bar
+    c. Click "Plugin Manager" on the left side
+    d. Click the "Get More..." button
+    e. Find GPX in the list and click "Install"
+    f. Restart octoprint (octopi puts a command on the "System" menu)
+    g. Refresh your browser
 
-5. Create a gpx.ini
-    You want the gpx.ini to have the settings for your printer.  If you already
-    use gpx with your slicer, copy it from there.  Otherwise, copy it from the
-    GPX folder.  It goes in ~/.octoprint/gpxProfiles.  I recommend switching
-    the flavor to reprap.
-    ```
-    mkdir ~/.octoprint/gpxProfiles
-    cp ~/OctoPrint-GPX/GPX/gpx.ini ~/.octoprint/gpxProfiles
-    ```
-    Actually, the newest version will create a gpx.ini there the first time you
-    save settings. 1. Click settings on the OctoPrint bar; 2. Choose GPX on the
-    lower left; 3. Choose your machine type and make sure "Enable GPX" is
-    checked and "Gcode flavor" says "RepRap"; 4. Click "Save" (bottom right)
-    
-    The rest only matters when printing gcode directly from OctoPrint and you
-    should really print from SD. Trigger the print from OctoPrint so you get
-    your timelapse and monitoring, but choose a file from the SD card.
+5. Set some settings.
 
-6. Restart OctoPrint
-    ```
-    sudo service octoprint restart
-    ```
+    a. Like step 4, get to Settings
+    b. Click "GPX" on the left nav
+    c. Choose your printer type and gcode flavor, leave the rest on default
 
-7. Turn on the GPX plugin
-    By default, it should be on when you install it, but you can check. From
-    the octoprint UI: choose settings from the navbar at the top, then GPX from
-    the bottom left, then switch from G-Code to x3g/gpx in the protocol, hit
-    save.
-
-8. Try connecting
+6. Try connecting
     Choose a port and baudrate.  I don't have AUTO working yet.  115200 works
-    on my bot, but you might want to try slower?
+    on my bot.
 
 ## Known issues
 * Upload to SD doesn't work. It can't work directly because SailFish removed
@@ -94,8 +65,7 @@ FlashForge Creator Pro running Sailfish 7.7
 * OctoPrint gets confused sometimes when using the LCD panel to make changes,
   we'll work on making it more robust
 * Octoprint expects the g-code to be Reprap style.  I haven't run across all of
-  the difficulties with this, but one is that when it runs across M109 it jumps
-  to the wrong conclusion about what's going to happen next.
+  the difficulties with this.
 * I really wouldn't recommend printing directly from the gcode file rather than
   an x3g on the SD card.  Besides Sailfish recommends against anything but SD,
   there's also the fact that this is fairly Alpha code and you wouldn't want a
