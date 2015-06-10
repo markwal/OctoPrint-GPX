@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import flask
 from flask import request, make_response
-from flask.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest
 
 import octoprint.plugin
 from octoprint.events import Events
