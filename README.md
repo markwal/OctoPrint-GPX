@@ -2,9 +2,9 @@
 An OctoPrint plug-in to use GPX as the protocol layer underneath rather than
 replacing g-code to talk to s3g/x3g machines, for example, a FlashForge.
 
-This plugin as it is now written requires brand new hooks that are just barely
-in OctoPrint's devel branch, so you'll need to run from source on the bleeding
-edge until that makes it into an official release
+This plugin requires brand new hooks that are in the 1.2.0 version of
+OctoPrint. As of this writing, it's still in release candidate mode.  So to use
+my plugin you'll need to update to the latest release candidate.
 
 ## Caveats
 I've only tested this on one config:
@@ -29,7 +29,7 @@ FlashForge Creator Pro running Sailfish 7.7
   (https://github.com/foosel/OctoPrint/wiki/FAQ#how-can-i-switch-the-branch-of-the-octoprint-installation-on-my-octopi-image)
     ```
     cd ~/OctoPrint
-    git pull & git checkout devel
+    git pull
     python setup.py clean
     python setup.py install
     sudo service octoprint restart
@@ -42,7 +42,7 @@ FlashForge Creator Pro running Sailfish 7.7
     * Click "Plugin Manager" on the left side
     * Click the "Get More..." button
     * Find GPX in the list and click "Install"
-    * Restart octoprint (octopi puts a command on the "System" menu)
+    * Restart octoprint (if you're using OctoPi: System.Restart from the menu bar)
     * Refresh your browser
 
 5. Set some settings.
@@ -62,17 +62,13 @@ FlashForge Creator Pro running Sailfish 7.7
   (Google Groups Post)[https://groups.google.com/d/msg/jetty-firmware/KCIfkv02MPY/SX17OBhXoJMJ]
   I'm working on FlashAir support
 * Can't delete SD files for a similar reason
-* OctoPrint gets confused sometimes when using the LCD panel to make changes,
-  we'll work on making it more robust
-* Octoprint expects the g-code to be Reprap style.  I haven't run across all of
-  the difficulties with this.
 * I really wouldn't recommend printing directly from the gcode file rather than
   an x3g on the SD card.  Besides Sailfish recommends against anything but SD,
   there's also the fact that this is fairly Alpha code and you wouldn't want a
   communications glitch to ruin your print several hours in. And I expect one.
   More than likely pretty quickly, but worst case, just before the build is
-  done. (Although I have successfully printed a Linkling directly from OctoPrint
-  just as a test.)
+  done.  Although lately I've been doing all my printing directly from OctoPrint
+  for testing this plugin and so far, so good.
 * Upload to OctoPrint and then print works with .gcode, not with .x3g. The GPX
   layer converts the gcode to x3g when you print from OctoPrint.  I need to
   figure out a way to make the UI more graceful about this. To review: If the

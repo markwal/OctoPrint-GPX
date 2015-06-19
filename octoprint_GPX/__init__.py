@@ -71,7 +71,9 @@ class GPXPlugin(
 		return dict(enabled=True)
 
 	def on_settings_save(self, data):
-		super(GPXPlugin, self).on_settings_save(data)
+		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
+		# and also foosel/OctoPrint@633d1ae594
+		octoprint.plugin.SettingsPlugin.on_settings_save(GPXPlugin, self).on_settings_save(data)
 		if self.printer:
 			self.printer.refresh_ini()
 
