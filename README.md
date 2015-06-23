@@ -1,6 +1,14 @@
 # OctoPrint-GPX
-An OctoPrint plug-in to use GPX as the protocol layer underneath rather than
-replacing g-code to talk to s3g/x3g machines, for example, a FlashForge.
+An OctoPrint plugin for MakerBot (prior to 5th gen) and clones.
+
+It uses GPX to translate gcode to s3g underneath OctoPrint in the communications
+layer.
+
+[GPX](whpthomas/GPX) is a *G*code *P*ostprocessing to *X*3g tool written by
+[WHPThomas](/whpthomas). Gcode is a language for describing toolpaths in 3d
+printers which is derived from the gcode used in CNC machines. X3g is an extension
+to the s3g protocol which was named for the Sanguino v3 which was in use at the
+time as the bot's controller.
 
 This plugin requires brand new hooks that are in the 1.2.0 version of
 OctoPrint. As of this writing, it's still in release candidate mode.  So to use

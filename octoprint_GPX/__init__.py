@@ -45,6 +45,24 @@ class GPXPlugin(
 		self.iniparser = IniParser(profile_path, self._logger)
 		self.printer = None
 
+	# Softwareupdate hook
+	def get_update_information(self):
+		return dict(
+			gpx=dict(
+				displayName="GPX Plugin",
+				displayVersion=self._plugin_version,
+
+				# use github release method of version check
+				type="github_release",
+				user="markwal",
+				repo="OctoPrint-GPX",
+				current=self._plugin_version,
+
+				# update method: pip
+				pip="https://github.com/markwal/OctoPrint-GPX/releases/download/{target_version}/OctoPrint-GPX-{target_version}.tar.gz"
+			)
+		)
+
 	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
 		if not self._settings.get_boolean(["enabled"]) or port == 'VIRTUAL':
 			return None
@@ -243,7 +261,8 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 			"octoprint.comm.transport.serial.factory": plugin.serial_factory,
-			"octoprint.filemanager.extension_tree": plugin.get_extension_tree
+			"octoprint.filemanager.extension_tree": plugin.get_extension_tree,
+			"octoprint.plugin.softwareupdate.check_config": plugin.get_update_information
 		}
 
 __plugin_name__ = "GPX"
