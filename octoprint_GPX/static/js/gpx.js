@@ -155,4 +155,4 @@ $(function() {
         ["gpxSettingsViewModel"],
         ["#gpx_machine_settings"]
     ]);
-})
+});

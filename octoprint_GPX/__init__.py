@@ -57,6 +57,7 @@ class GPXPlugin(
 				user="markwal",
 				repo="OctoPrint-GPX",
 				current=self._plugin_version,
+				prerelease=True,
 
 				# update method: pip
 				pip="https://github.com/markwal/OctoPrint-GPX/releases/download/{target_version}/OctoPrint-GPX-{target_version}.tar.gz"
