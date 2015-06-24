@@ -38,10 +38,21 @@ class GPXPlugin(
 		):
 	def on_after_startup(self):
 		from .iniparser import IniParser
-		profile_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
-		if not os.path.isdir(profile_folder):
-			os.makedirs(profile_folder)
-		profile_path = os.path.join(profile_folder, "gpx.ini")
+		old_data_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
+		data_folder = self._settings.get_plugin_data_folder()
+		if os.path.isdir(old_data_folder):
+			# migrate old folder to new one
+			if os.path.isdir(data_folder) and len(os.listdir(data_folder)) > 0:
+				self._logger.warn("Both old ({old}) and new ({new}) data folders exist. Not migrating to avoid data loss.".format(
+					old=old_data_folder, new=data_folder))
+			else:
+				import shutil
+				if os.path.isdir(data_folder):
+					os.rmdir(data_folder)
+				shutil.move(old_data_folder, data_folder)
+		elif not os.path.isdir(data_folder):
+			os.makedirs(data_folder)
+		profile_path = os.path.join(data_folder, "gpx.ini")
 		self.iniparser = IniParser(profile_path, self._logger)
 		self.printer = None
 
@@ -110,8 +121,8 @@ class GPXPlugin(
 		)
 
 	def fetch_machine_ini(self, machineid):
-		profile_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
-		profile_path = os.path.join(profile_folder, machineid + ".ini")
+		data_folder = self._settings.get_plugin_data_folder()
+		profile_path = os.path.join(data_folder, machineid + ".ini")
 		from .iniparser import IniParser
 		machine_ini = IniParser(profile_path, self._logger)
 		if os.path.isdir(profile_folder) and os.path.exists(profile_path) and os.path.isfile(profile_path):

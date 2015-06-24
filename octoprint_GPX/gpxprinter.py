@@ -31,11 +31,9 @@ class GpxPrinter():
 		self._logger.info("GPXPrinter created, port: %s, baudrate: %s" % (self.port, self.baudrate))
 		self.outgoing = Queue.Queue()
 		self.baudrateError = False;
-		profile_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
-		if not os.path.isdir(profile_folder):
-			os.makedirs(profile_folder)
-		self.profile_path = os.path.join(profile_folder, "gpx.ini")
-		log_path = os.path.join(self._settings.global_get_basefolder("logs"), "gpx.log")
+		data_folder = self._settings.get_plugin_data_folder()
+		self.profile_path = os.path.join(data_folder, "gpx.ini")
+		log_path = self._settings.get_plugin_logfile_path()
 		try:
 			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
 				self._logger.getEffectiveLevel() == logging.DEBUG))
