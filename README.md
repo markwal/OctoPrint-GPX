@@ -11,8 +11,9 @@ CNC machines.  X3g is an extension to the s3g protocol which was named for the
 Sanguino v3 which was in use at the time as the bot's controller.
 
 This plugin requires brand new hooks that are in the 1.2.0 version of
-OctoPrint. As of this writing, it's still in release candidate mode.  So to use
-my plugin you'll need to update to the latest release candidate.
+OctoPrint. As of this writing, 1.2.0 has been officially released, but the OctoPi
+image doesn't yet include it.  If you pick up a recent nightly it should be there
+or if not, it's relatively easy to update.
 
 ## Caveats
 I've only tested this on one config:
@@ -23,25 +24,21 @@ FlashForge Creator Pro running Sailfish 7.7
 1. Start with OctoPi: Get your Raspberry Pi up and running by following the
    instructions on [OctoPi](https://github.com/guysoft/OctoPi)
 
-2. OctoPi runs OctoPrint in a virtualenv. You'll want to switch to the
-   virtualenv for installing packages so they'll be available to OctoPrint.
-   Activating the environment means that when you type python or pip, it'll use
-   the ones out of ~/oprint/bin and use ~/oprint/lib for all package installs
-   and dependencies.  You can tell it is working by the "(oprint)" in front of
-   your prompt
+2. Update OctoPrint to at least 1.2.0 if it isn't already. Instructions are in
+    the [OctoPrint wiki FAQ](https://github.com/foosel/OctoPrint/wiki/FAQ). From
+    here (1.2.0) on out, it'll be even easier because you can use the builtin
+    softwareupdate plugin right from the browser.
+
     ```
     source ~/oprint/bin/activate
-    ```
-
-3. Switch to the devel branch of OctoPrint
-  (https://github.com/foosel/OctoPrint/wiki/FAQ#how-can-i-switch-the-branch-of-the-octoprint-installation-on-my-octopi-image)
-    ```
     cd ~/OctoPrint
     git pull
     python setup.py clean
     python setup.py install
     sudo service octoprint restart
     ```
+
+    Don't forget to refresh your browser.
 
 4. Get the GPX plugin. You get plugins by using the Plugin Manager in OctoPrint.
 
@@ -67,12 +64,12 @@ FlashForge Creator Pro running Sailfish 7.7
 * Upload to SD doesn't work. It can't work directly because SailFish removed
   that feature to save bytes. Probably a good call since who wants to wait for
   115200 baud when you can just plug the SD card into your PC.
-  (Google Groups Post)[https://groups.google.com/d/msg/jetty-firmware/KCIfkv02MPY/SX17OBhXoJMJ]
+  [Google Groups Post](https://groups.google.com/d/msg/jetty-firmware/KCIfkv02MPY/SX17OBhXoJMJ)
   I'm working on FlashAir support
 * Can't delete SD files for a similar reason
 * I really wouldn't recommend printing directly from the gcode file rather than
   an x3g on the SD card.  Besides Sailfish recommends against anything but SD,
-  there's also the fact that this is fairly Alpha code and you wouldn't want a
+  there's also the fact that this is fairly new code and you wouldn't want a
   communications glitch to ruin your print several hours in. And I expect one.
   More than likely pretty quickly, but worst case, just before the build is
   done.  Although lately I've been doing all my printing directly from OctoPrint
@@ -82,9 +79,6 @@ FlashForge Creator Pro running Sailfish 7.7
   figure out a way to make the UI more graceful about this. To review: If the
   destination is OctoPrint and let it drive: .gcode.  If the destination is the
   SD card and let the bot drive the print: .x3g.
-* Oh yeah, at the moment, its pretty piggy with the log file.  Default location
-  is ~/.octoprint/logs/gpx.log.  You might want to delete that from time to
-  time.
   
 ## Plan
 
