@@ -15,13 +15,10 @@ except:
 	pass
 
 class GpxPrinter():
-	def __init__(self, logger = None, settings = None, printer = None, port = None, baudrate = None, timeout = 0):
-		if logger is None:
-			self._logger = logging.getLogger(__name__)
-		else:
-			self._logger = logger
-		self._settings = settings
-		self._printer = printer
+	def __init__(self, gpx_plugin, port = None, baudrate = None, timeout = 0):
+		self._logger = gpx_plugin._logger
+		self._settings = gpx_plugin._settings
+		self._printer = gpx_plugin._printer
 		if not gpx:
 			self._logger.info("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
@@ -31,16 +28,18 @@ class GpxPrinter():
 		self._logger.info("GPXPrinter created, port: %s, baudrate: %s" % (self.port, self.baudrate))
 		self.outgoing = Queue.Queue()
 		self.baudrateError = False;
-		data_folder = self._settings.get_plugin_data_folder()
+		data_folder = gpx_plugin.get_plugin_data_folder()
 		self.profile_path = os.path.join(data_folder, "gpx.ini")
 		log_path = self._settings.get_plugin_logfile_path()
+		self._regex_linenumber = re.compile("N(\d+)")
 		try:
+			self._logger.info("Calling gpx.connect")
 			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
 				self._logger.getEffectiveLevel() == logging.DEBUG))
+			self._logger.info("gpx.connect succeeded")
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)
 			raise
-		self._regex_linenumber = re.compile("N(\d+)")
 
 	def refresh_ini(self):
 		if not self._printer.is_printing() and not self._printer.is_paused():

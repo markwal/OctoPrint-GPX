@@ -39,7 +39,7 @@ class GPXPlugin(
 	def on_after_startup(self):
 		from .iniparser import IniParser
 		old_data_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
-		data_folder = self._settings.get_plugin_data_folder()
+		data_folder = self.get_plugin_data_folder()
 		if os.path.isdir(old_data_folder):
 			# migrate old folder to new one
 			if os.path.isdir(data_folder) and len(os.listdir(data_folder)) > 0:
@@ -84,7 +84,7 @@ class GPXPlugin(
 			if port is None or port == 'AUTO' or baudrate is None or baudrate == 0:
 				raise IOError("AUTO port and baudrate not currently supported by GPX")
 			from .gpxprinter import GpxPrinter
-			self.printer = GpxPrinter(self._logger, self._settings, self._printer, port, baudrate, timeout)
+			self.printer = GpxPrinter(self, port, baudrate, timeout)
 			return self.printer
 		except Exception as e:
 			self._logger.info("Failed to connect to x3g e = %s." % e);
@@ -121,7 +121,7 @@ class GPXPlugin(
 		)
 
 	def fetch_machine_ini(self, machineid):
-		data_folder = self._settings.get_plugin_data_folder()
+		data_folder = self.get_plugin_data_folder()
 		profile_path = os.path.join(data_folder, machineid + ".ini")
 		from .iniparser import IniParser
 		machine_ini = IniParser(profile_path, self._logger)
