@@ -9,6 +9,13 @@
             </div>
         </div>
         <div class="control-group">
+            <div class="controls" data-toggle="tooltip" title="{{ _('Include prereleases when checking for updates') }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.prerelease"> {{ _('Include GPX plugin prereleases in update check') }}
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
             <label class="control-label">{{ _('Machine type:') }}</label>
             <div class="controls" data-toggle="tooltip" title="{{ _('Choose which machine type gpx should use for the conversion. Gcode uses mm and x3g uses steps, so gpx needs to know how many steps per mm among other things.') }}">
                 <select data-bind="value: ini.printer.machine_type">

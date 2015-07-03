@@ -68,10 +68,10 @@ class GPXPlugin(
 				user="markwal",
 				repo="OctoPrint-GPX",
 				current=self._plugin_version,
-				prerelease=True,
+				prerelease=self._settings.get_boolean(["prerelease"]),
 
 				# update method: pip
-				pip="https://github.com/markwal/OctoPrint-GPX/releases/download/{target_version}/OctoPrint-GPX-{target_version}.tar.gz"
+				pip="https://github.com/markwal/OctoPrint-GPX/releases/download/{target_version}/OctoPrint-GPX.tar.gz"
 			)
 		)
 
@@ -98,7 +98,7 @@ class GPXPlugin(
 		)
 		
 	def get_settings_defaults(self):
-		return dict(enabled=True)
+		return dict(enabled=True, prerelease=False)
 
 	def on_settings_save(self, data):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror

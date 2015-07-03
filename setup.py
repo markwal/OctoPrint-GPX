@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import setuptools
 import versioneer
 
@@ -90,4 +91,5 @@ def params():
 
 	return locals()
 
+os.environ['LANG'] = 'C'
 setuptools.setup(**params())
