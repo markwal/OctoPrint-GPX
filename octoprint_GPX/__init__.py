@@ -125,7 +125,7 @@ class GPXPlugin(
 		profile_path = os.path.join(data_folder, machineid + ".ini")
 		from .iniparser import IniParser
 		machine_ini = IniParser(profile_path, self._logger)
-		if os.path.isdir(profile_folder) and os.path.exists(profile_path) and os.path.isfile(profile_path):
+		if os.path.isdir(data_folder) and os.path.exists(profile_path) and os.path.isfile(profile_path):
 			try:
 				machine_ini.read()
 				self._logger.info("Read machine definition from %s" % profile_path)
