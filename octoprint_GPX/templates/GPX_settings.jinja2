@@ -7,11 +7,14 @@
                     <input type="checkbox" data-bind="checked: settings.plugins.GPX.enabled"> {{ _('Enable GPX') }}
                 </label>
             </div>
-        </div>
-        <div class="control-group">
             <div class="controls" data-toggle="tooltip" title="{{ _('Include prereleases when checking for updates') }}">
                 <label class="checkbox">
-                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.prerelease"> {{ _('Include GPX plugin prereleases in update check') }}
+                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.prerelease"> {{ _('Show pre-release updates') }}
+                </label>
+            </div>
+            <div class="controls" data-toggle="tooltip" title="{{ _('Tell the GPX gcode processor to be more verbose in the plugin log') }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.verbose"> {{ _('Verbose GPX logging') }}
                 </label>
             </div>
         </div>
@@ -37,6 +40,15 @@
                     <option value="zd">{{ _('ZYYX - dual extruder') }}</option>
                 </select>
                 <button class="btn" data-bind="click: showMachineDialog">{{ _('Edit Machine Definition...') }}</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Pause after connection:') }}</label>
+            <div class="controls" data-toggle="tooltip" title="{{ _('Some printers need a little more time to get sorted before GPX starts peppering it with questions. The default delay is 2 seconds.') }}">
+                <div class="input-append">
+                    <input type="number" step="1" class="input-mini text-right" data-bind="value: settings.plugins.GPX.connection_pause">
+                    <span class="add-on">secs</span>
+                </div>
             </div>
         </div>
     </fieldset>

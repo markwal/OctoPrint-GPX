@@ -36,6 +36,8 @@ class GpxPrinter():
 			self._logger.info("Calling gpx.connect")
 			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
 				self._logger.getEffectiveLevel() == logging.DEBUG))
+			time.sleep(float(self._settings.get(["connection_pause"])))
+			self._append(gpx.start())
 			self._logger.info("gpx.connect succeeded")
 		except Exception as e:
 			self._logger.info("gpx.connect raised exception = %s" % e)

@@ -98,12 +98,16 @@ class GPXPlugin(
 		)
 		
 	def get_settings_defaults(self):
-		return dict(enabled=True, prerelease=False)
+		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0)
 
 	def on_settings_save(self, data):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
 		# and also foosel/OctoPrint@633d1ae594
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+		try:
+			self._settings.set_float(["connection_pause"], float(self._settings.get(["connection_pause"])))
+		except TypeError:
+			self._settings.set_float(["connection_pause"], 2.0)
 		if self.printer:
 			self.printer.refresh_ini()
 

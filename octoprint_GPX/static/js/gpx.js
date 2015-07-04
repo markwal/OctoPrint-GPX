@@ -36,8 +36,7 @@ $(function() {
                 recalculate_5d: 0,
                 slicer_filament_diameter: undefined,
                 build_platform_temperature: undefined,
-                sd_card_path: undefined,
-                verbose: 0
+                sd_card_path: undefined
             },
             x: new Axis(),
             y: new Axis(),
