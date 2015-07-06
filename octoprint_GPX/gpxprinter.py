@@ -35,7 +35,7 @@ class GpxPrinter():
 		try:
 			self._logger.info("Calling gpx.connect")
 			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
-				self._logger.getEffectiveLevel() == logging.DEBUG))
+				self._settings.get_boolean(["verbose"])))
 			time.sleep(float(self._settings.get(["connection_pause"])))
 			self._append(gpx.start())
 			self._logger.info("gpx.connect succeeded")
@@ -79,7 +79,7 @@ class GpxPrinter():
 			if lineno == 1:
 				currentJob = self._printer.get_current_job()
 				if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"]:
-					gpx.write("M136 %s" % os.path.basename(currentJob["file"]["name"]))
+					gpx.write("M136 (%s)" % os.path.basename(currentJob["file"]["name"]))
 				else:
 					gpx.write("M136")
 
@@ -91,8 +91,7 @@ class GpxPrinter():
 				self._append(gpx.write("%s" % data))
 				break
 			except gpx.BufferOverflow:
-				self._append("buffer overflow")
-				time.sleep(1)
+				time.sleep(0.1)
 				pass
 			finally:
 				if match is None:
