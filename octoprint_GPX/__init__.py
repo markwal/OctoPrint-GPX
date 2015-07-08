@@ -98,7 +98,7 @@ class GPXPlugin(
 		)
 		
 	def get_settings_defaults(self):
-		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0)
+		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0, clear_queue_on_cancel=True)
 
 	def on_settings_save(self, data):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
@@ -112,10 +112,14 @@ class GPXPlugin(
 			self.printer.refresh_ini()
 
 	def on_event(self, event, payload):
+		# normally OctoPrint will merely stop sending commands on a cancel this
+		# means that whatever is in the printer's queue will complete including
+		# ten minutes to heat up the print bed; we circumvent here by telling
+		# the bot to stop
 		if event == Events.PRINT_CANCELLED:
 			if self.printer:
 				# jump the queue with an abort
-				self.printer.write("M112");
+				self.printer.cancel()
 
 	def get_assets(self):
 		return dict(

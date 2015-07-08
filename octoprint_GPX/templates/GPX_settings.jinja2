@@ -12,9 +12,9 @@
                     <input type="checkbox" data-bind="checked: settings.plugins.GPX.prerelease"> {{ _('Show pre-release updates') }}
                 </label>
             </div>
-            <div class="controls" data-toggle="tooltip" title="{{ _('Tell the GPX gcode processor to be more verbose in the plugin log') }}">
+            <div class="controls" data-toggle="tooltip" title="{{ _('Tell the GPX gcode processor to be more verbose in the plugin log. Warning, *very* verbose and GPX log deletion is manual on the Logs pane.') }}">
                 <label class="checkbox">
-                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.verbose"> {{ _('Verbose GPX logging') }}
+                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.verbose"> {{ _('Verbose GPX logging') }}&nbsp;<span class="label label-important">{{ _('Warning') }}</span>
                 </label>
             </div>
         </div>

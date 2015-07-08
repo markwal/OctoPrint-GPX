@@ -67,7 +67,6 @@ class GpxPrinter():
 			except ValueError:
 				self.baudrateError = True
 				self.outgoing.put('')
-				pass
 				return
 
 		# look for a line number
@@ -84,18 +83,21 @@ class GpxPrinter():
 					gpx.write("M136")
 
 		# try to talk to the bot
-		while True:
-			try:
-				if match is None:
-					reprapSave = gpx.reprap_flavor(True)
-				self._append(gpx.write("%s" % data))
-				break
-			except gpx.BufferOverflow:
-				time.sleep(0.1)
-				pass
-			finally:
-				if match is None:
-					gpx.reprap_flavor(reprapSave)
+		try:
+			if match is None:
+				reprapSave = gpx.reprap_flavor(True)
+
+			# loop sending until the queue isn't full
+			while True:
+				try:
+					self._append(gpx.write("%s" % data))
+					break
+				except gpx.BufferOverflow:
+					time.sleep(0.1)
+
+		finally:
+			if match is None:
+				gpx.reprap_flavor(reprapSave)
 
 	def readline(self):
 		while (self.baudrateError):
@@ -124,8 +126,18 @@ class GpxPrinter():
 			if append_later is not None:
 				self._append(append_later)
 			self._logger.debug("timeout")
-			pass
 		return ''
+
+	def cancel(self):
+		# loop sending until the queue isn't full
+		while True:
+			try:
+				self._append(gpx.cancel(self._settings.get_boolean(['clear_queue_on_cancel'])))
+				break
+			except gpx.BufferOverflow:
+				time.sleep(0.1)
+		# tell octoprint to ok to send
+		self._append("ok")
 
 	def close(self):
 		gpx.disconnect()
