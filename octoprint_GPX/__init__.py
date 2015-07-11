@@ -34,10 +34,13 @@ class GPXPlugin(
 		octoprint.plugin.SettingsPlugin,
 		octoprint.plugin.EventHandlerPlugin,
 		octoprint.plugin.AssetPlugin,
-		octoprint.plugin.BlueprintPlugin
+		octoprint.plugin.BlueprintPlugin,
+		octoprint.plugin.ProgressPlugin
 		):
-	def on_after_startup(self):
-		from .iniparser import IniParser
+
+	# StartupPlugin
+	def on_after_startup(self, *args, **kwargs):
+		# get the plugin data folder
 		old_data_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
 		data_folder = self.get_plugin_data_folder()
 		if os.path.isdir(old_data_folder):
@@ -52,12 +55,19 @@ class GPXPlugin(
 				shutil.move(old_data_folder, data_folder)
 		elif not os.path.isdir(data_folder):
 			os.makedirs(data_folder)
+
+		# parse the ini file
 		profile_path = os.path.join(data_folder, "gpx.ini")
+		from .iniparser import IniParser
 		self.iniparser = IniParser(profile_path, self._logger)
+		self.override_progress = False
 		self.printer = None
 
+		# compile regex
+		self._regex_m73 = re.compile("N(\d+) M73 P(\d+)")
+
 	# Softwareupdate hook
-	def get_update_information(self):
+	def get_update_information(self, *args, **kwargs):
 		return dict(
 			gpx=dict(
 				displayName="GPX Plugin",
@@ -75,10 +85,14 @@ class GPXPlugin(
 			)
 		)
 
+	# main serial connection hook
 	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
 		if not self._settings.get_boolean(["enabled"]) or port == 'VIRTUAL':
 			return None
-
+		self.iniparser.read()
+		self.override_progress = self.iniparser.get("printer", "build_progress")
+		if self.override_progress is None:
+			self.override_progress = True
 		self._logger.info("Connecting through x3g.")
 		try:
 			if port is None or port == 'AUTO' or baudrate is None or baudrate == 0:
@@ -90,17 +104,19 @@ class GPXPlugin(
 			self._logger.info("Failed to connect to x3g e = %s." % e);
 			raise
 
+	# add x3g/s3g too the allowed extensions
 	def get_extension_tree(self, *args, **kwargs):
 		return dict(
 			machinecode=dict(
 				x3g=["x3g", "s3g"]
 			)
 		)
-		
-	def get_settings_defaults(self):
+
+	# SettingsPlugin
+	def get_settings_defaults(self, *args, **kwargs):
 		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0, clear_queue_on_cancel=True)
 
-	def on_settings_save(self, data):
+	def on_settings_save(self, data, *args, **kwargs):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
 		# and also foosel/OctoPrint@633d1ae594
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
@@ -111,7 +127,8 @@ class GPXPlugin(
 		if self.printer:
 			self.printer.refresh_ini()
 
-	def on_event(self, event, payload):
+	# EventHandlerPlugin
+	def on_event(self, event, payload, *args, **kwargs):
 		# normally OctoPrint will merely stop sending commands on a cancel this
 		# means that whatever is in the printer's queue will complete including
 		# ten minutes to heat up the print bed; we circumvent here by telling
@@ -121,13 +138,37 @@ class GPXPlugin(
 				# jump the queue with an abort
 				self.printer.cancel()
 
-	def get_assets(self):
+	# ProgressPlugin
+	def on_print_progress(self, storage, path, progress, *args, **kwargs):
+		# override progress inside GPX only works in two pass (offline file)
+		# attempt to override here with OctoPrint's notion
+		# avoid 100% since that triggers end_build and we'll let that happen
+		# explicitly
+		if progress < 100 and self.override_progress and self.printer:
+			self.printer.write("M73 P%d" % progress)
+
+	# gcode processing hook
+	def rewrite_m73(self, comm, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		# if we're overriding progress and we got an M73 with a P between
+		# 0 and 100 exclusive.  We let the 0 and 100 through because they're
+		# the begin and end markers
+		if self.override_progress:
+			match = self._regex_m73.match(cmd)
+			if match is not None:
+				progress = int(match.group(2))
+				if progress > 0 and progress < 100:
+					return None,
+		return None
+
+	# AssetPlugin
+	def get_assets(self, *args, **kwargs):
 		return dict(
 			js=["js/gpx.js"],
 			css=["css/gpx.css"],
 			less=["less/gpx.less"]
 		)
 
+	# machine ini handling
 	def fetch_machine_ini(self, machineid):
 		data_folder = self.get_plugin_data_folder()
 		profile_path = os.path.join(data_folder, machineid + ".ini")
@@ -153,8 +194,9 @@ class GPXPlugin(
 			return make_response("Invalid machineid. Upper or lower case letters and numbers only and 8 chars or less")
 		return None
 
+	# BlueprintPlugin
 	@octoprint.plugin.BlueprintPlugin.route("/defaultmachine/<string:machineid>", methods=["GET"])
-	def defaultmachine(self, machineid):
+	def defaultmachine(self, machineid, *args, **kwargs):
 		response = self.validate_machineid(machineid)
 		if response is not None:
 			return response
@@ -167,7 +209,7 @@ class GPXPlugin(
 		return flask.jsonify(self.ini_massage_out(machine))
 
 	@octoprint.plugin.BlueprintPlugin.route("/machine/<string:machineid>", methods=["GET"])
-	def machine(self, machineid):
+	def machine(self, machineid, *args, **kwargs):
 		response = self.validate_machineid(machineid)
 		if response is not None:
 			return response
@@ -178,7 +220,7 @@ class GPXPlugin(
 		return flask.jsonify(self.ini_massage_out(machine))
 
 	@octoprint.plugin.BlueprintPlugin.route("/machine/<string:machineid>", methods=["POST"])
-	def putmachine(self, machineid):
+	def putmachine(self, machineid, *args, **kwargs):
 		response = self.validate_machineid(machineid)
 		if response is not None:
 			return response
@@ -247,7 +289,7 @@ class GPXPlugin(
 		return ini
 
 	@octoprint.plugin.BlueprintPlugin.route("/ini", methods=["GET"])
-	def ini(self):
+	def ini(self, *args, **kwargs):
 		try:
 			ini = self.iniparser.read()
 		except IOError:
@@ -258,7 +300,7 @@ class GPXPlugin(
 		return flask.jsonify(self.ini_massage_out(ini))
 
 	@octoprint.plugin.BlueprintPlugin.route("/ini", methods=["POST"])
-	def putini(self):
+	def putini(self, *args, **kwargs):
 		self._logger.info("putini")
 		if not "application/json" in request.headers["Content-Type"]:
 			return make_response("Expected content-type JSON", 400)
@@ -282,7 +324,8 @@ def __plugin_load__():
 	__plugin_hooks__ = {
 			"octoprint.comm.transport.serial.factory": plugin.serial_factory,
 			"octoprint.filemanager.extension_tree": plugin.get_extension_tree,
-			"octoprint.plugin.softwareupdate.check_config": plugin.get_update_information
+			"octoprint.plugin.softwareupdate.check_config": plugin.get_update_information,
+			"octoprint.comm.protocol.gcode.queuing": plugin.rewrite_m73
 		}
 
 __plugin_name__ = "GPX"

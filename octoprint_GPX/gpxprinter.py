@@ -78,7 +78,9 @@ class GpxPrinter():
 			if lineno == 1:
 				currentJob = self._printer.get_current_job()
 				if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"]:
-					gpx.write("M136 (%s)" % os.path.basename(currentJob["file"]["name"]))
+					build_name = os.path.splitext(os.path.basename(currentJob["file"]["name"]))[0]
+					gpx.write("(@build %s)" % build_name)
+					gpx.write("M136 (%s)" % build_name)
 				else:
 					gpx.write("M136")
 

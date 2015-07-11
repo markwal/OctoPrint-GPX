@@ -125,6 +125,11 @@ class IniParser():
 			for option, line in section.items():
 				print line
 
+	def get(self, sectionname, itemname):
+		if sectionname in self.ini and itemname in self.ini[sectionname]:
+			return self.ini[sectionname][itemname]
+		return None
+
 #		config = ConfigParser.SafeConfigParser()
 #		for name, section in ini.items() :
 #			if not config.has_section(name):
