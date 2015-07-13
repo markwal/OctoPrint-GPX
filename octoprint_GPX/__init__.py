@@ -145,7 +145,7 @@ class GPXPlugin(
 		# avoid 100% since that triggers end_build and we'll let that happen
 		# explicitly
 		if progress < 100 and self.override_progress and self.printer:
-			self.printer.write("M73 P%d" % progress)
+			self.printer.progress(progress)
 
 	# gcode processing hook
 	def rewrite_m73(self, comm, phase, cmd, cmd_type, gcode, *args, **kwargs):
@@ -159,6 +159,12 @@ class GPXPlugin(
 				if progress > 0 and progress < 100:
 					return None,
 		return None
+
+	# protocol script hook
+	def cancel_sync(self, comm, script_type, script_name, *args, **kwargs):
+		if not script_type == "gcode" or not script_name == "afterPrintCancelled":
+			return None
+		return "(@clear_cancel)", None
 
 	# AssetPlugin
 	def get_assets(self, *args, **kwargs):
@@ -325,7 +331,8 @@ def __plugin_load__():
 			"octoprint.comm.transport.serial.factory": plugin.serial_factory,
 			"octoprint.filemanager.extension_tree": plugin.get_extension_tree,
 			"octoprint.plugin.softwareupdate.check_config": plugin.get_update_information,
-			"octoprint.comm.protocol.gcode.queuing": plugin.rewrite_m73
+			"octoprint.comm.protocol.gcode.queuing": plugin.rewrite_m73,
+			"octoprint.comm.protocol.scripts": plugin.cancel_sync
 		}
 
 __plugin_name__ = "GPX"

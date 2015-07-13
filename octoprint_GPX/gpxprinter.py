@@ -48,6 +48,9 @@ class GpxPrinter():
 			gpx.reset_ini()
 			gpx.read_ini(self.profile_path)
 
+	def progress(self, percent):
+		gpx.write("M73 P%d" % percent)
+
 	def _append(self, s):
 		if (s != ''):
 			for item in s.split('\n'):
@@ -104,7 +107,7 @@ class GpxPrinter():
 	def readline(self):
 		while (self.baudrateError):
 			if (self._baudrate != self.baudrate):
-				self.write("M105")
+				gpx.write("M105")
 			return ''
 		try:
 			s = self.outgoing.get_nowait()
@@ -131,15 +134,12 @@ class GpxPrinter():
 		return ''
 
 	def cancel(self):
-		# loop sending until the queue isn't full
-		while True:
-			try:
-				self._append(gpx.cancel(self._settings.get_boolean(['clear_queue_on_cancel'])))
-				break
-			except gpx.BufferOverflow:
-				time.sleep(0.1)
-		# tell octoprint to ok to send
-		self._append("ok")
+		if self._settings.get_boolean(['extended_stop_instead_of_abort']):
+			# make sure if you use this you have your own "gcode on cancel"
+			# that turns off motors and heaters
+			gpx.stop()
+		else:
+			gpx.abort()
 
 	def close(self):
 		gpx.disconnect()
