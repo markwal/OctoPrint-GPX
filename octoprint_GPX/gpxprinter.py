@@ -49,7 +49,13 @@ class GpxPrinter():
 			gpx.read_ini(self.profile_path)
 
 	def progress(self, percent):
-		gpx.write("M73 P%d" % percent)
+		# loop sending until the queue isn't full
+		while True:
+			try:
+				gpx.write("M73 P%d" % percent)
+				break
+			except gpx.BufferOverflow:
+				time.sleep(0.1)
 
 	def _append(self, s):
 		if (s != ''):
