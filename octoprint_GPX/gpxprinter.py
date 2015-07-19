@@ -20,7 +20,7 @@ class GpxPrinter():
 		self._settings = gpx_plugin._settings
 		self._printer = gpx_plugin._printer
 		if not gpx:
-			self._logger.info("Unable to import gpx module")
+			self._logger.warn("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
 		self.port = port
 		self.baudrate = self._baudrate = baudrate
@@ -33,7 +33,7 @@ class GpxPrinter():
 		log_path = self._settings.get_plugin_logfile_path()
 		self._regex_linenumber = re.compile("N(\d+)")
 		try:
-			self._logger.info("Calling gpx.connect")
+			self._logger.debug("Calling gpx.connect")
 			self._append(gpx.connect(port, baudrate, self.profile_path, log_path,
 				self._settings.get_boolean(["verbose"])))
 			time.sleep(float(self._settings.get(["connection_pause"])))
@@ -49,12 +49,15 @@ class GpxPrinter():
 			gpx.read_ini(self.profile_path)
 
 	def progress(self, percent):
-		# loop sending until the queue isn't full
-		while True:
+		# loop sending for a while if the queue isn't full or if the bot
+		# isn't listening
+		for i in range(0, 10):
 			try:
 				gpx.write("M73 P%d" % percent)
 				break
 			except gpx.BufferOverflow:
+				time.sleep(0.1)
+			except gpx.Timeout:
 				time.sleep(0.1)
 
 	def _append(self, s):
@@ -99,12 +102,18 @@ class GpxPrinter():
 				reprapSave = gpx.reprap_flavor(True)
 
 			# loop sending until the queue isn't full
+			retries = 0
 			while True:
 				try:
 					self._append(gpx.write("%s" % data))
 					break
 				except gpx.BufferOverflow:
 					time.sleep(0.1)
+				except gpx.Timeout:
+					time.sleep(1)
+					retries += 1
+					if (retries >= 5):
+						raise
 
 		finally:
 			if match is None:
@@ -143,8 +152,10 @@ class GpxPrinter():
 		if self._settings.get_boolean(['extended_stop_instead_of_abort']):
 			# make sure if you use this you have your own "gcode on cancel"
 			# that turns off motors and heaters
+			self._logger.debug("stop")
 			gpx.stop()
 		else:
+			self._logger.debug("abort")
 			gpx.abort()
 
 	def close(self):

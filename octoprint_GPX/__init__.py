@@ -114,7 +114,7 @@ class GPXPlugin(
 
 	# SettingsPlugin
 	def get_settings_defaults(self, *args, **kwargs):
-		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0, clear_queue_on_cancel=True)
+		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0)
 
 	def on_settings_save(self, data, *args, **kwargs):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
