@@ -85,7 +85,7 @@ def params():
 			'GPX/src/gpx/gpx.c',
 			'GPX/src/gpx/gpx-main.c',
 			],
-		extra_compile_args = ['-DSERIAL_SUPPORT', '-fvisibility=hidden', '-IGPX/src/shared', '-IGPX/src/gpx'],
+		extra_compile_args = ['-DGPX_VERSION="\\"OctoPrint\\""', '-DSERIAL_SUPPORT', '-fvisibility=hidden', '-IGPX/src/shared', '-IGPX/src/gpx'],
 		extra_link_args = ['-fvisibility=hidden'])
 		]
 
