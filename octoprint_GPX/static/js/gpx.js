@@ -71,7 +71,8 @@ $(function() {
         };
 
         self.onAfterBinding = function() {
-            $('[data-toggle=tooltip]').tooltip({placement: 'left'});
+            $('#gpx_settings').find('[data-toggle=tooltip]').tooltip({placement: 'left'});
+            $('#gpx_machine_settings').find('[data-toggle=tooltip]').tooltip();
         };
 
         self.onSettingsShown = self.requestData;
@@ -113,8 +114,9 @@ $(function() {
 
         self.machine = ko.mapping.fromJS(machineInitial);
 
-        $("#gpx_machine_settings").on("show", function() {
-            self.requestMachine();
+        $("#gpx_machine_settings").on("show", function(event) {
+            if (event.target.id == "gpx_machine_settings")
+                self.requestMachine();
         });
 
         self.requestMachine = function() {

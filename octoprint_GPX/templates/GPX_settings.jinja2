@@ -145,24 +145,32 @@
                     <th>X</th>
                     <th>Y</th>
                     <th>Z</th>
+                    <th>A</th>
+                    <th>B</th>
                 </thead>
                 <tr data-toggle="tooltip" data-placement="bottom" title="{{ _('GPX will clip feedrates specified by the gcode above this value.  Units are mm per min.') }}">
                     <td class="label-column text-right">{{ _('Max Feedrate:') }}</td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.x.max_feedrate"></td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.y.max_feedrate"></td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.z.max_feedrate"></td>
+                    <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.a.max_feedrate"></td>
+                    <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.b.max_feedrate"></td>
                 </tr>
-                <tr data-toggle="tooltip" data-placement="bottom" title="{{ _('Travel rate when executing "home" gcodes.') }}">
+                <tr data-toggle="tooltip" data-placement="bottom" title="{{ _('Travel rate when executing homing (G28 G161 G162) gcodes.') }}">
                     <td class="label-column text-right">{{ _('Home Feedrate:') }}</td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.x.home_feedrate"></td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.y.home_feedrate"></td>
                     <td><input type="number" step="1" class="input-mini text-right" data-bind="value: machine.z.home_feedrate"></td>
+                    <td style="text-align: center">N/A</td>
+                    <td style="text-align: center">N/A</td>
                 </tr>
                 <tr data-toggle="tooltip" data-placement="bottom" title="{{ _('Steps on the stepper motor per mm of linear travel along the axis.') }}">
                     <td class="label-column text-right">{{ _('Steps per mm:') }}</td>
                     <td><input type="number" step="0.000001" class="input-mini text-right no-spinner" data-bind="value: machine.x.steps_per_mm"></td>
                     <td><input type="number" step="0.000001" class="input-mini text-right no-spinner" data-bind="value: machine.y.steps_per_mm"></td>
                     <td><input type="number" step="0.000001" class="input-mini text-right no-spinner" data-bind="value: machine.z.steps_per_mm"></td>
+                    <td><input type="number" step="0.000001" class="input-mini text-right no-spinner" data-bind="value: machine.a.steps_per_mm"></td>
+                    <td><input type="number" step="0.000001" class="input-mini text-right no-spinner" data-bind="value: machine.b.steps_per_mm"></td>
                 </tr>
                 <tr data-toggle="tooltip" data-placement="top" title="{{ _('Direction of home on the axis.  Maximum or minimum end of the axis.') }}">
                     <td class="label-column text-right">{{ _('Home:') }}</td>
@@ -181,6 +189,8 @@
                         <option value="0">{{ _('Min') }}</option>
                         <option value="1">{{ _('Max') }}</option>
                     </select></td>
+                    <td style="text-align: center">N/A</td>
+                    <td style="text-align: center">N/A</td>
                 </tr>
             </table>
         </form>
