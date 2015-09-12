@@ -59,6 +59,10 @@ $(function() {
             $("#gpx_machine_settings").modal("show");
         };
 
+        self.showEepromDialog = function() {
+            $("#gpx_eeprom_settings").modal("show");
+        };
+
         self.requestData = function() {
             $.getJSON("/plugin/GPX/ini", function(data) {
                 console.log(data);
@@ -92,7 +96,7 @@ $(function() {
     };
 
     function GpxMachineViewModel(parameters) {
-        self = this;
+        var self = this;
 
         self.gpx = parameters[0];
 
@@ -146,6 +150,38 @@ $(function() {
         };
     };
 
+    function GpxEepromViewModel(parameters) {
+        var self = this;
+
+        self.gpx = parameters[0];
+
+        self.axes = { X: 0, Y: 1, Z: 2, A: 3, B: 4 };
+
+        self.eeprom = {
+            HBP_PRESENT: ko.observable(0),
+        };
+
+        self.invert_axis = {};
+        for (axis in self.axes) {
+            self.invert_axis[axis] = ko.observable(false);
+        }
+        self.invert_axis.Z(true);
+
+        $("#gpx_eeprom_settings").on("show", function(event) {
+            if (event.target.id == "gpx_eeprom_settings") {
+                self.requestEepromSettings();
+            }
+        });
+
+        self.requestEepromSettings = function() {
+            self.eeprom.HBP_PRESENT(1);
+        };
+
+        self.saveEepromSettings = function() {
+            $("#gpx_eeprom_settings").modal("hide");
+        };
+    };
+
     OCTOPRINT_VIEWMODELS.push([
         GpxSettingsViewModel,
         ["settingsViewModel"],
@@ -155,5 +191,10 @@ $(function() {
         GpxMachineViewModel,
         ["gpxSettingsViewModel"],
         ["#gpx_machine_settings"]
+    ]);
+    OCTOPRINT_VIEWMODELS.push([
+        GpxEepromViewModel,
+        ["gpxSettingsViewModel"],
+        ["#gpx_eeprom_settings"]
     ]);
 });

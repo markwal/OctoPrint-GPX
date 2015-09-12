@@ -19,3 +19,7 @@ input.no-spinner::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+#gpx_eeprom_settings.modal {
+  width: 768px;
+  margin-left: -384px;
+}

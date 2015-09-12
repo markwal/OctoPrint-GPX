@@ -22,6 +22,10 @@
             <label class="control-label">{{ _('Machine type:') }}</label>
             <div class="controls" data-toggle="tooltip" title="{{ _('Choose which machine type gpx should use for the conversion. Gcode uses mm and x3g uses steps, so gpx needs to know how many steps per mm among other things.') }}">
                 <select data-bind="value: ini.printer.machine_type">
+                    <option value="cxy">{{ _('Core-XY with HBP - single extruder') }}</option>
+                    <option value="cxysz">{{ _('Core-XY with HBP - single extruder, slow Z') }}</option>
+                    <option value="cr1">{{ _('Clone R1 Single with HBP') }}</option>
+                    <option value="cr1d">{{ _('Clone R1 Dual with HBP') }}</option>
                     <option value="c3">{{ _('Cupcake Gen3 XYZ, Mk5/6 + Gen4 Extruder') }}</option>
                     <option value="c4">{{ _('Cupcake Gen4 XYZ, Mk5/6 + Gen4 Extruder') }}</option>
                     <option value="cp4">{{ _('Cupcake Pololu XYZ, Mk5/6 + Gen4 Extruder') }}</option>
@@ -34,8 +38,6 @@
                     <option value="r2">{{ _('Replicator 2 (default)') }}</option>
                     <option value="r2h">{{ _('Replicator 2 with HBP') }}</option>
                     <option value="r2x">{{ _('Replicator 2X') }}</option>
-                    <option value="cxy">{{ _('Core-XY with HBP - single extruder') }}</option>
-                    <option value="cxysz">{{ _('Core-XY with HBP - single extruder, slow Z') }}</option>
                     <option value="z">{{ _('ZYYX - single extruder') }}</option>
                     <option value="zd">{{ _('ZYYX - dual extruder') }}</option>
                 </select>
@@ -49,6 +51,11 @@
                     <input type="number" step="1" class="input-mini text-right" data-bind="value: settings.plugins.GPX.connection_pause">
                     <span class="add-on">secs</span>
                 </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn" data-bind="click: showEepromDialog">{{ _('EEPROM Settings...') }}</button>
             </div>
         </div>
     </fieldset>
@@ -199,5 +206,144 @@
         <button class="btn pull-left" data-bind="click: requestMachineDefaults">{{ _('Reset to default') }}</button>
         <button class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</button>
         <button class="btn btn-primary" data-bind="click: saveMachineSettings">{{ _('Save') }}</button>
+    </div>
+</div>
+
+{% macro gpx_checkbox(bind, label, tooltip='') -%}
+    <div class="controls" data-toggle="tooltip" title="{{ tooltip }}">
+        <label class="checkbox">
+            <input type="checkbox" data-bind="checked: {{ bind }}" />{{ label }}
+        </label>
+    </div>
+{%- endmacro %}
+
+{% macro gpx_input(bind, step, min, max) -%}
+    {% if min == max %}
+    <input type="number" step="{{step}}" class="input-mini text-right" data-bind="value: {{ bind }}">
+    {% else %}
+    <input type="number" step="{{step}}" min="{{min}}" max="{{max}}" class="input-mini text-right" data-bind="value: {{ bind }}">
+    {% endif %}
+{%- endmacro %}
+
+{% macro gpx_spinner(bind, step, min, max, label, tooltip='') -%}
+<div class="control-group">
+    <label class="control-label">{{ label }}</label>
+    <div class="controls" data-toggle="tooltip" title="{{ tooltip }}">
+        {{ gpx_input(bind, step, min, max) }}
+    </div>
+</div>
+{%- endmacro %}
+
+{% macro gpx_spinner_unit(bind, unit, step, min, max, label, tooltip='') -%}
+<div class="control-group">
+    <label class="control-label">{{ label }}</label>
+    <div class="controls" data-toggle="tooltip" title="{{ tooltip }}">
+        <div class="input-append">
+            {{ gpx_input(bind, step, min, max) }}
+            <span class="add-on">{{ unit }}</span>
+        </div>
+    </div>
+</div>
+{%- endmacro %}
+
+{% macro gpx_axis_suffix(axis) -%}
+    {% if axis == 'A' %}{{ _(' (Right)') }}{% elif axis == 'B' %}{{ _(' (Left)') }}{% endif %}
+{%- endmacro %}
+
+<div id="gpx_eeprom_settings" class="modal hide fade">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
+        <h3>{{ _('EEPROM Settings') }}</h3>
+    </div>
+    <div class="modal-body tabbable row-fluid">
+        <div class="span3" id="gpx_eeprom_menu">
+            <ul class="nav nav-list" id="gpx_eeprom_tabs">
+                <li id="gpx_eeprom_misc_link" class="active"><a href="#gpx_eeprom_misc" data-toggle="tab">{{ _('Installed Equipment') }}</a>
+                <li id="gpx_eeprom_axes_link"><a href="#gpx_eeprom_axes" data-toggle="tab">{{ _('Axes') }}</a>
+                <li id="gpx_eeprom_endstops_link"><a href="#gpx_eeprom_endstops" data-toggle="tab">{{ _('Endstops') }}</a>
+                <li id="gpx_eeprom_homing_link"><a href="#gpx_eeprom_homing" data-toggle="tab">{{ _('Homing') }}</a>
+                <li id="gpx_eeprom_homing_link"><a href="#gpx_eeprom_digipot" data-toggle="tab">{{ _('Digipots') }}</a>
+                <li id="gpx_eeprom_accel_link"><a href="#gpx_eeprom_accel" data-toggle="tab">{{ _('Acceleration') }}</a>
+                <li id="gpx_eeprom_accel2_link"><a href="#gpx_eeprom_accel2" data-toggle="tab">{{ _('Acceleration (Misc)') }}</a>
+                <li id="gpx_eeprom_heaters_link"><a href="#gpx_eeprom_heaters" data-toggle="tab">{{ _('Heaters') }}</a>
+            </ul>
+        </div>
+        <div class="tab-content span8 form-horizontal">
+            <div id="gpx_eeprom_misc" class="tab-pane active">
+                {{ gpx_spinner('eeprom.TOOLCOUNT', 1, 1, 2, _('Number of extruders')) }}
+                {{ gpx_checkbox('eeprom.HBP_PRESENT', _('Heated build platform'), _('Indicates to the firmware whether there is a platform heater to control')) }}
+                {{ gpx_checkbox('eeprom.PSTOP_ENABLE', _('Pause stop switch installed'), _("When checked, enable Sailfish's Pause Stop (P-Stop) switch detection mechanism. Pauses prints on an external electrical signal")) }}
+                {{ gpx_checkbox('eeprom.ESTOP_ENABLE', _('Clear build on emergency stop'), _('By default, when the printer receives an abort, cancel or stop command over USB it treats it as an emergency and stops immediately. With this setting on, it will move build away from the nozzle first.')) }}
+            </div>
+            <div id="gpx_eeprom_axes" class="tab-pane">
+                <div class="control-group">
+                    {{ gpx_checkbox('z_hold', _('Hold Z axis'), _("If Z hold is on, the firmware will keep power to the Z stepper even when it isn't moving to hold it in place")) }}
+                    {% set axes = "XYZAB" %}
+                    {% for axis in axes %}
+                    {% set axis_name = axis + ' axis' + gpx_axis_suffix(axis) %}
+                    {{ gpx_checkbox('invert_axis.' + axis, _('Invert {}').format(axis_name), _('If an axis is moving in the wrong direction, toggle that axis')) }}
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="gpx_eeprom_endstops" class="tab-pane">
+                <div class="control-group">
+                    {% for axis in axes %}
+                    {% set axis_name = axis + ' axis' + gpx_axis_suffix(axis) %}
+                    {{ gpx_checkbox('invert_endstop.' + axis, _('Invert {} endstop').format(axis_name), _("Default is for an endstop switch to close (pull low) when triggered (inverted). If you've replaced the endstops for normally closed ones (perhaps optical), clear the invert endstop box.")) }}
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="gpx_eeprom_homing" class="tab-pane">
+                    {% for axis in axes %}
+                    {{ gpx_spinner_unit('home.' + axis, _('mm'), 0.1, 0, 0, _('{} home offset').format(axis), _('When all axes are in the home position [against their endstops], the home offset is the distance of the right nozzle from the center of the built platform.')) }}
+                    {% endfor %}
+                    {% for axis in axes %}
+                    {{ gpx_spinner_unit('toolhead_offset.' + axis, _('mm'), 0.1, 0, 0, _('{} toolhead offset').format(axis), _('The toolhead offset is the distance between the nozzles on a dual nozzle printer.')) }}
+                    {% endfor %}
+            </div>
+            <div id="gpx_eeprom_digipot" class="tab-pane">
+                <div class="control-group">
+                    {% for pot in range(5) %}
+                    {{ gpx_spinner('eeprom.DIGI_POT_SETTINGS_%s' % pot, 1, 0, 118, _('Digital potentiometer {}').format(pot), _('Digipots are used to set the voltage level and thus the current driving the steppers.')) }}
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="gpx_eeprom_accel" class="tab-pane">
+                {{ gpx_checkbox('eeprom.ACCELERATION_ACTIVE', _('Acceleration enabled'), _('Check to use acceleration. Note you must turn acceleration on to print safely at speeds over 50mm/s.')) }}
+                {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_NORMAL_MOVE', _('mm/s²'), 1, 0, 10000, _('Maximum acceleration'), _('Maximum magnitude of the acceleration vector in mm per seconds²')) }}
+                {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_EXTRUDER_MOVE', _('mm/s²'), 1, 0, 10000, _('Max acceleration for extruder-only moves')) }}
+                {% for axis in axes %}
+                {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_AXIS_' + axis, _('mm/s²'), 1, 0, 10000, _('{} max acceleration').format(axis), _('The maximum acceleration and deceleration along the axis.')) }}
+                {% endfor %}
+                {% for axis in axes %}
+                {{ gpx_spinner_unit('eeprom.MAX_SPEED_CHANGE_' + axis, _('mm/s'), 1, 0, 300, _('{} max speed change').format(axis), _('Maximum commanded instantaneous speed change.')) }}
+                {% endfor %}
+            </div>
+            <div id="gpx_eeprom_accel2" class="tab-pane">
+                {{ gpx_checkbox('eeprom.SLOWDOWN_FLAG', _('Slow printing when acceleration planning falls behind'), _('Check to enable automatic print slowdown when the queue of planned segments is running low.')) }}
+                {{ gpx_spinner('jkn.k', 0.0001, 0, 1, _('JKN Advance K')) }}
+                {{ gpx_spinner('jkn.k2', 0.00001, 0, 1, _('JKN Advance K2')) }}
+                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_A', _('steps'), 1, 0, 65535, _('Right (A) extruder deprime')) }}
+                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_B', _('steps'), 1, 0, 65535, _('Left (B) extruder deprime')) }}
+            </div>
+            <div id="gpx_eeprom_heaters" class="tab-pane" data-toggle="tooltip" title="{{ _('These are the parameters to the proportional-integral-derivative controller for the hotends') }}">
+                <div class="well">
+                    <legend>{{ _('Right (A) extruder PID values') }}</legend>
+                    {% for term in "PID" %}
+                    {{ gpx_spinner('T0_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
+                    {% endfor %}
+                </div>
+                <div class="well">
+                    <legend>{{ _('Left (B) extruder PID values') }}</legend>
+                    {% for term in "PID" %}
+                    {{ gpx_spinner('T1_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal">{{ _('Cancel') }}</button>
+        <button class="btn btn-primary" data-bind="click: saveEepromSettings">{{ _('Save') }}</button>
     </div>
 </div>
