@@ -264,7 +264,8 @@
                 <li id="gpx_eeprom_homing_link"><a href="#gpx_eeprom_homing" data-toggle="tab">{{ _('Homing') }}</a>
                 <li id="gpx_eeprom_homing_link"><a href="#gpx_eeprom_digipot" data-toggle="tab">{{ _('Digipots') }}</a>
                 <li id="gpx_eeprom_accel_link"><a href="#gpx_eeprom_accel" data-toggle="tab">{{ _('Acceleration') }}</a>
-                <li id="gpx_eeprom_accel2_link"><a href="#gpx_eeprom_accel2" data-toggle="tab">{{ _('Acceleration (Misc)') }}</a>
+                <li id="gpx_eeprom_accel2_link"><a href="#gpx_eeprom_accel2" data-toggle="tab">{{ _('More Acceleration') }}</a>
+                <li id="gpx_eeprom_features_link"><a href="#gpx_eeprom_features" data-toggle="tab">{{ _('Firmware Features') }}</a>
                 <li id="gpx_eeprom_heaters_link"><a href="#gpx_eeprom_heaters" data-toggle="tab">{{ _('Heaters') }}</a>
             </ul>
         </div>
@@ -315,16 +316,25 @@
                 {% for axis in axes %}
                 {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_AXIS_' + axis, _('mm/s²'), 1, 0, 10000, _('{} max acceleration').format(axis), _('The maximum acceleration and deceleration along the axis.')) }}
                 {% endfor %}
+            </div>
+            <div id="gpx_eeprom_accel2" class="tab-pane">
                 {% for axis in axes %}
                 {{ gpx_spinner_unit('eeprom.MAX_SPEED_CHANGE_' + axis, _('mm/s'), 1, 0, 300, _('{} max speed change').format(axis), _('Maximum commanded instantaneous speed change.')) }}
                 {% endfor %}
+                {{ gpx_spinner('jkn.k', 0.0001, 0, 1, _('JKN Advance K'), _('JKN is the Jetty-Kubicek-Newman Advance algorithm. The K parameter is an emperical fit value that helps control the amount of additional plastic that should be extruded during acceleration and retained during deceleration. It can remove blobbing and splaying on the corners or at junctions. Typical values for K range from 0.0001 to 0.01. Set to 0 to disable the use of this compensation.')) }}
+                {{ gpx_spinner('jkn.k2', 0.00001, 0, 1, _('JKN Advance K2'), _('Jetty-Kubicek-Newman Advance parameter K2 helps during the deceleration phase of moves to reduce the built up pressure in the extruder nozzle. Typical values for this parameter range from around 0.001 to 0.1. Set to 0 to disable use of this compensation.')) }}
             </div>
-            <div id="gpx_eeprom_accel2" class="tab-pane">
+            <div id="gpx_eeprom_features" class="tab-pane">
                 {{ gpx_checkbox('eeprom.SLOWDOWN_FLAG', _('Slow printing when acceleration planning falls behind'), _('Check to enable automatic print slowdown when the queue of planned segments is running low.')) }}
-                {{ gpx_spinner('jkn.k', 0.0001, 0, 1, _('JKN Advance K')) }}
-                {{ gpx_spinner('jkn.k2', 0.00001, 0, 1, _('JKN Advance K2')) }}
-                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_A', _('steps'), 1, 0, 65535, _('Right (A) extruder deprime')) }}
-                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_B', _('steps'), 1, 0, 65535, _('Left (B) extruder deprime')) }}
+                {{ gpx_checkbox('eeprom.OVERRIDE_GCODE_FLAG', _('Override gcode target temperatures'), _('If override gcode temperature is on, it replaces any non-zero target temperature with the corresponding preheat temperature setting.')) }}
+                {{ gpx_checkbox('eeprom.HEAT_DURING_PAUSE', _('Heat during pause'), _('Check to leave the heaters on for up to 30 minutes while the bot is paused. Uncheck to turn off the heaters whenever the bot is paused.')) }}
+                {{ gpx_checkbox('eeprom.SD_USE_CRC', _('SD error checking'), _('If this is checked, the firmware will do a checksum on reads from the SD card to make sure it got correct information. It will retry five times. If all five attempts fail, it will cancel the print and display an error. With this clear, the error will go undetected and may ruin your print. NOTE that Replicator 1 is particularly susceptible to data transfer errors due to their electronics design.')) }}
+                {{ gpx_checkbox('eeprom.EXTRUDER_HOLD', _('Extruder hold'), _('With this checked, the firmware will keep power to the extruder motor to hold it in place while not extruding. With the checkbox clear, the filament can move on its own either due to gravity or tension from moving the extruder around.')) }}
+                {{ gpx_checkbox('eeprom.EXTRUDER_DEPRIME_ON_TRAVEL', _('Deprime on travel moves'), _('The bot deprimes (retracts filament) on commanded pauses and brief pauses caused by having the acceleration planner get behind. If deprime on travel is checked, it also deprimes when it detects a move without extrusion. If your slicer does that for you, turn this setting off. To entirely disable firmware deprime, set the deprime steps for the extruders to 0.')) }}
+                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_A', _('steps'), 1, 0, 65535, _('Right (A) extruder deprime distance'), _('When the firmware does an automatic retraction/deprime on the right extruder, it will retract this many steps.')) }}
+                {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_B', _('steps'), 1, 0, 65535, _('Left (B) extruder deprime distance'), _('When the firmware does an automatic retraction/deprime on the left extruder, it will retract this many steps.')) }}
+                {{ gpx_spinner_unit('eeprom.ALEVEL_MAX_ZPROBE_HITS', _('hits'), 1, 0, 200, _('Auto-level max Z probe hits'), _('If the auto-leveling probe registers too many hits during a print, the bot will pause printing and request manual intervention. To ignore probe hits while printing, specify a value of zero. The default value is 20. Only applies on bots with firmware-based auto-levelling and an auto-level probe installed.')) }}
+                {{ gpx_spinner_unit('autolevel.max_z_delta', _('mm'), 1, 0, 0, _('Auto-level max height difference'), _('Maximum vertical difference between any two probed leveling points. Default is 0.5mm.')) }}
             </div>
             <div id="gpx_eeprom_heaters" class="tab-pane" data-toggle="tooltip" title="{{ _('These are the parameters to the proportional-integral-derivative controller for the hotends') }}">
                 <div class="well">
