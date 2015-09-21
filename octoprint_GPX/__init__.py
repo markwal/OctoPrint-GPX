@@ -11,6 +11,7 @@ from werkzeug.exceptions import BadRequest
 
 import octoprint.plugin
 from octoprint.events import Events
+from octoprint.server import admin_permission
 
 try:
 	import gpx
@@ -226,6 +227,7 @@ class GPXPlugin(
 		return flask.jsonify(self.ini_massage_out(machine))
 
 	@octoprint.plugin.BlueprintPlugin.route("/machine/<string:machineid>", methods=["POST"])
+	@admin_permission.require(403)
 	def putmachine(self, machineid, *args, **kwargs):
 		response = self.validate_machineid(machineid)
 		if response is not None:
@@ -306,8 +308,9 @@ class GPXPlugin(
 		return flask.jsonify(self.ini_massage_out(ini))
 
 	@octoprint.plugin.BlueprintPlugin.route("/ini", methods=["POST"])
+	@admin_permission.require(403)
 	def putini(self, *args, **kwargs):
-		self._logger.info("putini")
+		self._logger.debug("putini")
 		if not "application/json" in request.headers["Content-Type"]:
 			return make_response("Expected content-type JSON", 400)
 		try:
@@ -319,6 +322,46 @@ class GPXPlugin(
 		self.iniparser.write()
 		return ('', 200)
 
+	@octoprint.plugin.BlueprintPlugin.route("/eeprom/<string:eepromid>", methods=["GET"])
+	def eeprom(self, eepromid, *args, **kwargs):
+		response = self.validate_eepromid(eepromid)
+		if response is not None:
+			return response
+		try:
+			value = self.read_eeprom(eepromid)
+		except ValueError:
+			return make_response("Unknown eeprom id: %s" % eepromid, 404)
+		return flask.jsonify(value)
+
+	@octoprint.plugin.BlueprintPlugin.route("/eeprom/<string:eepromid>", methods=["POST"])
+	@admin_permission.require(403)
+	def puteeprom(self, eepromid, *args, **kwargs):
+		if not "Content-Type" in request.headers or not "application/json" in request.headers["Content-Type"]:
+			return make_response("Expected content-type JSON", 400)
+		try:
+			value = request.json
+		except BadRequest:
+			return make_response("Malformed JSON body in request", 400)
+		# TODO: set value
+		return ('', 200)
+
+	@octoprint.plugin.BlueprintPlugin.route("/eeprombatch", methods=["POST"])
+	@admin_permission.require(403)
+	def batcheeprom(self, *args, **kwargs):
+		self._logger.info("batcheeprom")
+		if not "Content-Type" in request.headers or not "application/json" in request.headers["Content-Type"]:
+			return make_response("Expected content-type JSON", 400)
+		try:
+			json = request.json
+		except BadRequest:
+			return make_response("Malformed JSON body in request", 400)
+		response = {}
+		for eepromid in json:
+			try:
+				response[eepromid] = self.read_eeprom(eepromid)
+			except ValueError:
+				self._logger.warn("Unknown EEPROM id %s" % key)
+		return flask.jsonify(response)
 
 def __plugin_load__():
 	plugin = GPXPlugin()

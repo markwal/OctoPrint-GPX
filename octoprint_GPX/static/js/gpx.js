@@ -65,7 +65,6 @@ $(function() {
 
         self.requestData = function() {
             $.getJSON("/plugin/GPX/ini", function(data) {
-                console.log(data);
                 ko.mapping.fromJS(data, self.ini);
             });
         };
@@ -157,9 +156,34 @@ $(function() {
 
         self.axes = { X: 0, Y: 1, Z: 2, A: 3, B: 4 };
 
+        self.eeromids = [
+            "TOOLCOUNT", "HBP_PRESENT", "PSTOP_ENABLE", "ESTOP_ENABLE", "AXIS_INVERSION",
+            "ENDSTOP_INVERSION", "AXIS_HOME_POSITIONS_STEPS_X", "AXIS_HOME_POSITIONS_STEPS_Y",
+            "AXIS_HOME_POSITIONS_STEPS_Z", "AXIS_HOME_POSITIONS_STEPS_A", "AXIS_HOME_POSITIONS_STEPS_B",
+            "TOOLHEAD_OFFSET_SETTINGS_X", "TOOLHEAD_OFFSET_SETTINGS_Y",
+            "DIGI_POT_SETTINGS_0", "DIGI_POT_SETTINGS_1", "DIGI_POT_SETTINGS_2", "DIGI_POT_SETTINGS_3", "DIGI_POT_SETTINGS_4",
+            "AXIS_STEPS_PER_MM_X", "AXIS_STEPS_PER_MM_Y", "AXIS_STEPS_PER_MM_Z", "AXIS_STEPS_PER_MM_A", "AXIS_STEPS_PER_MM_B",
+        ];
+
         self.eeprom = {
+            TOOLCOUNT: ko.observable(0),
             HBP_PRESENT: ko.observable(0),
+            PSTOP_ENABLE: ko.observable(0),
+            ESTOP_ENABLE: ko.observable(0),
+            AXIS_HOME_POSITIONS_X: ko.observable(0),
+            AXIS_HOME_POSITIONS_Y: ko.observable(0),
+            AXIS_HOME_POSITIONS_Z: ko.observable(0),
+            AXIS_HOME_POSITIONS_A: ko.observable(0),
+            AXIS_HOME_POSITIONS_B: ko.observable(0),
+            AXIS_STEPS_PER_MM_X: ko.observable(0),
+            AXIS_STEPS_PER_MM_Y: ko.observable(0),
+            AXIS_STEPS_PER_MM_Z: ko.observable(0),
+            AXIS_STEPS_PER_MM_A: ko.observable(0),
+            AXIS_STEPS_PER_MM_B: ko.observable(0),
+            AXIS_INVERSION: ko.observable(0),
         };
+
+        self.z_hold = false;
 
         self.invert_axis = {};
         for (axis in self.axes) {
@@ -174,7 +198,27 @@ $(function() {
         });
 
         self.requestEepromSettings = function() {
-            self.eeprom.HBP_PRESENT(1);
+            $.ajax({
+                url: "/plugin/GPX/eeprombatch",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=UTF-8",
+                data: JSON.stringify(self.eepromids),
+                success: function(response) {
+                    ko.mapping.fromJS(response, self.eeprom);
+                    self.home.X(self.eeprom.AXIS_HOME_POSITIONS_X / self.eeprom.AXIS_STEPS_PER_MM_X);
+                    self.home.Y(self.eeprom.AXIS_HOME_POSITIONS_Y / self.eeprom.AXIS_STEPS_PER_MM_Y);
+                    self.home.Z(self.eeprom.AXIS_HOME_POSITIONS_Z / self.eeprom.AXIS_STEPS_PER_MM_Z);
+                    self.home.A(self.eeprom.AXIS_HOME_POSITIONS_A / self.eeprom.AXIS_STEPS_PER_MM_A);
+                    self.home.B(self.eeprom.AXIS_HOME_POSITIONS_B / self.eeprom.AXIS_STEPS_PER_MM_B);
+                    self.invert_axis.X(!!(self.eeprom.AXIS_INVERSION & 0x1));
+                    self.invert_axis.Y(!!(self.eeprom.AXIS_INVERSION & 0x2));
+                    self.invert_axis.Z(!!(self.eeprom.AXIS_INVERSION & 0x4));
+                    self.invert_axis.A(!!(self.eeprom.AXIS_INVERSION & 0x8));
+                    self.invert_axis.B(!!(self.eeprom.AXIS_INVERSION & 0x10));
+                    self.z_hold = !!(self.eeprom.AXIS_INVERSION & 0x80);
+                }
+            });
         };
 
         self.saveEepromSettings = function() {

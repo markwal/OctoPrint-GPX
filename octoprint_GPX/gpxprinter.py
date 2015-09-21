@@ -105,7 +105,10 @@ class GpxPrinter():
 			retries = 0
 			while True:
 				try:
-					self._append(gpx.write("%s" % data))
+					self._logger.debug("writing '%s'" % data)
+					s = gpx.write("%s" % data)
+					self._logger.debug("write returned '%s'" % s)
+					self._append(s)
 					break
 				except gpx.BufferOverflow:
 					time.sleep(0.1)
@@ -131,19 +134,23 @@ class GpxPrinter():
 		except Queue.Empty:
 			pass
 		s = gpx.readnext()
+		self._logger.debug("readnext returned '%s'" % s)
 		timeout = self.timeout
 		append_later = None
 		if gpx.waiting():
+			self._logger.debug("gpx is waiting timeout 2")
 			append_later = s
 			timeout = 2
 		else:
+			self._logger.debug("append '%s'" % s)
 			self._append(s)
 		try:
 			s = self.outgoing.get(timeout=timeout)
-			self._logger.debug("readline: %s" % s)
+			self._logger.debug("second readline: %s" % s)
 			return s
 		except Queue.Empty:
 			if append_later is not None:
+				self._logger.debug("append_later not None");
 				self._append(append_later)
 			self._logger.debug("timeout")
 		return ''
