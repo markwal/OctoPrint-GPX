@@ -25,6 +25,7 @@ $(function() {
         var self = this;
 
         self.settingsViewModel = parameters[0];
+        self.isOperational = parameters[1].isOperational;
 
         var iniInitial = {
             printer: {
@@ -156,40 +157,71 @@ $(function() {
 
         self.axes = { X: 0, Y: 1, Z: 2, A: 3, B: 4 };
 
-        self.eeromids = [
-            "TOOLCOUNT", "HBP_PRESENT", "PSTOP_ENABLE", "ESTOP_ENABLE", "AXIS_INVERSION",
-            "ENDSTOP_INVERSION", "AXIS_HOME_POSITIONS_STEPS_X", "AXIS_HOME_POSITIONS_STEPS_Y",
-            "AXIS_HOME_POSITIONS_STEPS_Z", "AXIS_HOME_POSITIONS_STEPS_A", "AXIS_HOME_POSITIONS_STEPS_B",
-            "TOOLHEAD_OFFSET_SETTINGS_X", "TOOLHEAD_OFFSET_SETTINGS_Y",
-            "DIGI_POT_SETTINGS_0", "DIGI_POT_SETTINGS_1", "DIGI_POT_SETTINGS_2", "DIGI_POT_SETTINGS_3", "DIGI_POT_SETTINGS_4",
-            "AXIS_STEPS_PER_MM_X", "AXIS_STEPS_PER_MM_Y", "AXIS_STEPS_PER_MM_Z", "AXIS_STEPS_PER_MM_A", "AXIS_STEPS_PER_MM_B",
-        ];
+        var eeprom = {
+            TOOL_COUNT: undefined,
+            HBP_PRESENT: undefined,
+            PSTOP_ENABLE: undefined,
+            CLEAR_FOR_ESTOP: undefined,
+            AXIS_INVERSION: undefined,
+            ENDSTOP_INVERSION: undefined,
+            TOOLHEAD_OFFSET_SETTINGS_X: undefined,
+            TOOLHEAD_OFFSET_SETTINGS_Y: undefined,
+            DIGI_POT_SETTINGS_0: undefined,
+            DIGI_POT_SETTINGS_1: undefined,
+            DIGI_POT_SETTINGS_2: undefined,
+            DIGI_POT_SETTINGS_3: undefined,
+            DIGI_POT_SETTINGS_4: undefined,
+            ACCELERATION_ACTIVE: undefined,
+            SLOWDOWN_FLAG: undefined,
+            OVERRIDE_GCODE_TEMP: undefined,
+            HEAT_DURING_PAUSE: undefined,
+            SD_USE_CRC: undefined,
+            EXTRUDER_HOLD: undefined,
+            EXTRUDER_DEPRIME_ON_TRAVEL: undefined,
+            EXTRUDER_DEPRIME_STEPS_A: undefined,
+            EXTRUDER_DEPRIME_STEPS_B: undefined,
+            ALEVEL_MAX_ZPROBE_HITS: undefined,
+            ALEVEL_MAX_ZDELTA: undefined,
+            T0_EXTRUDER_P_TERM: undefined,
+            T0_EXTRUDER_I_TERM: undefined,
+            T0_EXTRUDER_D_TERM: undefined,
+            T1_EXTRUDER_P_TERM: undefined,
+            T1_EXTRUDER_I_TERM: undefined,
+            T1_EXTRUDER_D_TERM: undefined,
+            JKN_ADVANCE_K: undefined,
+            JKN_ADVANCE_K2: undefined,
+            TOOLHEAD_OFFSET_SETTINGS_X: undefined,
+            TOOLHEAD_OFFSET_SETTINGS_Y: undefined,
+        };
+        for (axis in self.axes) {
+            eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis] = undefined;
+            eeprom["AXIS_STEPS_PER_MM_" + axis] = undefined;
+            eeprom["MAX_ACCELERATION_AXIS_" + axis] = undefined;
+            eeprom["MAX_SPEED_CHANGE_" + axis] = undefined;
+        }
 
-        self.eeprom = {
-            TOOLCOUNT: ko.observable(0),
-            HBP_PRESENT: ko.observable(0),
-            PSTOP_ENABLE: ko.observable(0),
-            ESTOP_ENABLE: ko.observable(0),
-            AXIS_HOME_POSITIONS_X: ko.observable(0),
-            AXIS_HOME_POSITIONS_Y: ko.observable(0),
-            AXIS_HOME_POSITIONS_Z: ko.observable(0),
-            AXIS_HOME_POSITIONS_A: ko.observable(0),
-            AXIS_HOME_POSITIONS_B: ko.observable(0),
-            AXIS_STEPS_PER_MM_X: ko.observable(0),
-            AXIS_STEPS_PER_MM_Y: ko.observable(0),
-            AXIS_STEPS_PER_MM_Z: ko.observable(0),
-            AXIS_STEPS_PER_MM_A: ko.observable(0),
-            AXIS_STEPS_PER_MM_B: ko.observable(0),
-            AXIS_INVERSION: ko.observable(0),
+        self.eeprom = ko.mapping.fromJS(eeprom);
+        self.eepromids = Object.keys(eeprom);
+
+        self.z_hold = ko.observable(undefined);
+        self.jkn_k = ko.observable(undefined);
+        self.jkn_k2 = ko.observable(undefined);
+        self.max_zdelta = ko.observable(undefined);
+        self.toolhead_offset = {
+            X: ko.observable(undefined),
+            Y: ko.observable(undefined)
         };
 
-        self.z_hold = false;
-
         self.invert_axis = {};
+        self.invert_endstop = {};
+        self.home = {};
+        self.steps_per_mm = {};
         for (axis in self.axes) {
-            self.invert_axis[axis] = ko.observable(false);
+            self.invert_axis[axis] = ko.observable(undefined);
+            self.invert_endstop[axis] = ko.observable(undefined);
+            self.home[axis] = ko.observable(undefined);
+            self.steps_per_mm[axis] = ko.observable(1.0);
         }
-        self.invert_axis.Z(true);
 
         $("#gpx_eeprom_settings").on("show", function(event) {
             if (event.target.id == "gpx_eeprom_settings") {
@@ -198,6 +230,7 @@ $(function() {
         });
 
         self.requestEepromSettings = function() {
+            console.log(self.eepromids);
             $.ajax({
                 url: "/plugin/GPX/eeprombatch",
                 type: "POST",
@@ -205,18 +238,22 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 data: JSON.stringify(self.eepromids),
                 success: function(response) {
+                    self.eeprom_raw = response;
                     ko.mapping.fromJS(response, self.eeprom);
-                    self.home.X(self.eeprom.AXIS_HOME_POSITIONS_X / self.eeprom.AXIS_STEPS_PER_MM_X);
-                    self.home.Y(self.eeprom.AXIS_HOME_POSITIONS_Y / self.eeprom.AXIS_STEPS_PER_MM_Y);
-                    self.home.Z(self.eeprom.AXIS_HOME_POSITIONS_Z / self.eeprom.AXIS_STEPS_PER_MM_Z);
-                    self.home.A(self.eeprom.AXIS_HOME_POSITIONS_A / self.eeprom.AXIS_STEPS_PER_MM_A);
-                    self.home.B(self.eeprom.AXIS_HOME_POSITIONS_B / self.eeprom.AXIS_STEPS_PER_MM_B);
-                    self.invert_axis.X(!!(self.eeprom.AXIS_INVERSION & 0x1));
-                    self.invert_axis.Y(!!(self.eeprom.AXIS_INVERSION & 0x2));
-                    self.invert_axis.Z(!!(self.eeprom.AXIS_INVERSION & 0x4));
-                    self.invert_axis.A(!!(self.eeprom.AXIS_INVERSION & 0x8));
-                    self.invert_axis.B(!!(self.eeprom.AXIS_INVERSION & 0x10));
-                    self.z_hold = !!(self.eeprom.AXIS_INVERSION & 0x80);
+                    bit = 0x1;
+                    for (axis in self.axes) {
+                        self.steps_per_mm[axis](self.eeprom["AXIS_STEPS_PER_MM_" + axis]() / 1000000.0);
+                        self.home[axis](self.eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis]() / self.steps_per_mm[axis]());
+                        self.invert_axis[axis](!!(self.eeprom.AXIS_INVERSION() & bit));
+                        self.invert_endstop[axis](!!(self.eeprom.ENDSTOP_INVERSION() & bit));
+                        bit <<= 1;
+                    }
+                    self.z_hold(!!(self.eeprom.AXIS_INVERSION() & 0x80));
+                    self.jkn_k(self.eeprom.JKN_ADVANCE_K() / 100000.0);
+                    self.jkn_k2(self.eeprom.JKN_ADVANCE_K2() / 100000.0);
+                    self.toolhead_offset.X(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X() /self.steps_per_mm.X());
+                    self.toolhead_offset.Y(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y() /self.steps_per_mm.Y());
+                    self.max_zdelta(self.eeprom.ALEVEL_MAX_ZDELTA() / self.steps_per_mm.Z());
                 }
             });
         };
@@ -228,7 +265,7 @@ $(function() {
 
     OCTOPRINT_VIEWMODELS.push([
         GpxSettingsViewModel,
-        ["settingsViewModel"],
+        ["settingsViewModel", "printerStateViewModel"],
         ["#gpx_settings"]
     ]);
     OCTOPRINT_VIEWMODELS.push([

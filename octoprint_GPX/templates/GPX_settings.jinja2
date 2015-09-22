@@ -55,7 +55,7 @@
         </div>
         <div class="control-group">
             <div class="controls">
-                <button class="btn" data-bind="click: showEepromDialog">{{ _('EEPROM Settings...') }}</button>
+                <button class="btn" data-bind="enable: isOperational(), click: showEepromDialog">{{ _('EEPROM Settings...') }}</button>
             </div>
         </div>
     </fieldset>
@@ -219,9 +219,9 @@
 
 {% macro gpx_input(bind, step, min, max) -%}
     {% if min == max %}
-    <input type="number" step="{{step}}" class="input-mini text-right" data-bind="value: {{ bind }}">
+    <input type="number" step="{{step}}" class="input text-right" data-bind="value: {{ bind }}">
     {% else %}
-    <input type="number" step="{{step}}" min="{{min}}" max="{{max}}" class="input-mini text-right" data-bind="value: {{ bind }}">
+    <input type="number" step="{{step}}" min="{{min}}" max="{{max}}" class="input text-right" data-bind="value: {{ bind }}">
     {% endif %}
 {%- endmacro %}
 
@@ -271,10 +271,10 @@
         </div>
         <div class="tab-content span8 form-horizontal">
             <div id="gpx_eeprom_misc" class="tab-pane active">
-                {{ gpx_spinner('eeprom.TOOLCOUNT', 1, 1, 2, _('Number of extruders')) }}
+                {{ gpx_spinner('eeprom.TOOL_COUNT', 1, 1, 2, _('Number of extruders')) }}
                 {{ gpx_checkbox('eeprom.HBP_PRESENT', _('Heated build platform'), _('Indicates to the firmware whether there is a platform heater to control')) }}
                 {{ gpx_checkbox('eeprom.PSTOP_ENABLE', _('Pause stop switch installed'), _("When checked, enable Sailfish's Pause Stop (P-Stop) switch detection mechanism. Pauses prints on an external electrical signal")) }}
-                {{ gpx_checkbox('eeprom.ESTOP_ENABLE', _('Clear build on emergency stop'), _('By default, when the printer receives an abort, cancel or stop command over USB it treats it as an emergency and stops immediately. With this setting on, it will move build away from the nozzle first.')) }}
+                {{ gpx_checkbox('eeprom.CLEAR_FOR_ESTOP', _('Clear build on emergency stop'), _('By default, when the printer receives an abort, cancel or stop command over USB it treats it as an emergency and stops immediately. With this setting on, it will move build away from the nozzle first.')) }}
             </div>
             <div id="gpx_eeprom_axes" class="tab-pane">
                 <div class="control-group">
@@ -286,7 +286,6 @@
                     {% endfor %}
                 </div>
             </div>
-            {% if False %}
             <div id="gpx_eeprom_endstops" class="tab-pane">
                 <div class="control-group">
                     {% for axis in axes %}
@@ -299,7 +298,7 @@
                     {% for axis in axes %}
                     {{ gpx_spinner_unit('home.' + axis, _('mm'), 0.1, 0, 0, _('{} home offset').format(axis), _('When all axes are in the home position [against their endstops], the home offset is the distance of the right nozzle from the center of the built platform.')) }}
                     {% endfor %}
-                    {% for axis in axes %}
+                    {% for axis in "XY" %}
                     {{ gpx_spinner_unit('toolhead_offset.' + axis, _('mm'), 0.1, 0, 0, _('{} toolhead offset').format(axis), _('The toolhead offset is the distance between the nozzles on a dual nozzle printer.')) }}
                     {% endfor %}
             </div>
@@ -312,8 +311,6 @@
             </div>
             <div id="gpx_eeprom_accel" class="tab-pane">
                 {{ gpx_checkbox('eeprom.ACCELERATION_ACTIVE', _('Acceleration enabled'), _('Check to use acceleration. Note you must turn acceleration on to print safely at speeds over 50mm/s.')) }}
-                {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_NORMAL_MOVE', _('mm/s²'), 1, 0, 10000, _('Maximum acceleration'), _('Maximum magnitude of the acceleration vector in mm per seconds²')) }}
-                {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_EXTRUDER_MOVE', _('mm/s²'), 1, 0, 10000, _('Max acceleration for extruder-only moves')) }}
                 {% for axis in axes %}
                 {{ gpx_spinner_unit('eeprom.MAX_ACCELERATION_AXIS_' + axis, _('mm/s²'), 1, 0, 10000, _('{} max acceleration').format(axis), _('The maximum acceleration and deceleration along the axis.')) }}
                 {% endfor %}
@@ -322,12 +319,12 @@
                 {% for axis in axes %}
                 {{ gpx_spinner_unit('eeprom.MAX_SPEED_CHANGE_' + axis, _('mm/s'), 1, 0, 300, _('{} max speed change').format(axis), _('Maximum commanded instantaneous speed change.')) }}
                 {% endfor %}
-                {{ gpx_spinner('jkn.k', 0.0001, 0, 1, _('JKN Advance K'), _('JKN is the Jetty-Kubicek-Newman Advance algorithm. The K parameter is an emperical fit value that helps control the amount of additional plastic that should be extruded during acceleration and retained during deceleration. It can remove blobbing and splaying on the corners or at junctions. Typical values for K range from 0.0001 to 0.01. Set to 0 to disable the use of this compensation.')) }}
-                {{ gpx_spinner('jkn.k2', 0.00001, 0, 1, _('JKN Advance K2'), _('Jetty-Kubicek-Newman Advance parameter K2 helps during the deceleration phase of moves to reduce the built up pressure in the extruder nozzle. Typical values for this parameter range from around 0.001 to 0.1. Set to 0 to disable use of this compensation.')) }}
+                {{ gpx_spinner('jkn_k', 0.0001, 0, 1, _('JKN Advance K'), _('JKN is the Jetty-Kubicek-Newman Advance algorithm. The K parameter is an emperical fit value that helps control the amount of additional plastic that should be extruded during acceleration and retained during deceleration. It can remove blobbing and splaying on the corners or at junctions. Typical values for K range from 0.0001 to 0.01. Set to 0 to disable the use of this compensation.')) }}
+                {{ gpx_spinner('jkn_k2', 0.00001, 0, 1, _('JKN Advance K2'), _('Jetty-Kubicek-Newman Advance parameter K2 helps during the deceleration phase of moves to reduce the built up pressure in the extruder nozzle. Typical values for this parameter range from around 0.001 to 0.1. Set to 0 to disable use of this compensation.')) }}
             </div>
             <div id="gpx_eeprom_features" class="tab-pane">
                 {{ gpx_checkbox('eeprom.SLOWDOWN_FLAG', _('Slow printing when acceleration planning falls behind'), _('Check to enable automatic print slowdown when the queue of planned segments is running low.')) }}
-                {{ gpx_checkbox('eeprom.OVERRIDE_GCODE_FLAG', _('Override gcode target temperatures'), _('If override gcode temperature is on, it replaces any non-zero target temperature with the corresponding preheat temperature setting.')) }}
+                {{ gpx_checkbox('eeprom.OVERRIDE_GCODE_TEMP', _('Override gcode target temperatures'), _('If override gcode temperature is on, it replaces any non-zero target temperature with the corresponding preheat temperature setting.')) }}
                 {{ gpx_checkbox('eeprom.HEAT_DURING_PAUSE', _('Heat during pause'), _('Check to leave the heaters on for up to 30 minutes while the bot is paused. Uncheck to turn off the heaters whenever the bot is paused.')) }}
                 {{ gpx_checkbox('eeprom.SD_USE_CRC', _('SD error checking'), _('If this is checked, the firmware will do a checksum on reads from the SD card to make sure it got correct information. It will retry five times. If all five attempts fail, it will cancel the print and display an error. With this clear, the error will go undetected and may ruin your print. NOTE that Replicator 1 is particularly susceptible to data transfer errors due to their electronics design.')) }}
                 {{ gpx_checkbox('eeprom.EXTRUDER_HOLD', _('Extruder hold'), _('With this checked, the firmware will keep power to the extruder motor to hold it in place while not extruding. With the checkbox clear, the filament can move on its own either due to gravity or tension from moving the extruder around.')) }}
@@ -335,23 +332,22 @@
                 {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_A', _('steps'), 1, 0, 65535, _('Right (A) extruder deprime distance'), _('When the firmware does an automatic retraction/deprime on the right extruder, it will retract this many steps.')) }}
                 {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_B', _('steps'), 1, 0, 65535, _('Left (B) extruder deprime distance'), _('When the firmware does an automatic retraction/deprime on the left extruder, it will retract this many steps.')) }}
                 {{ gpx_spinner_unit('eeprom.ALEVEL_MAX_ZPROBE_HITS', _('hits'), 1, 0, 200, _('Auto-level max Z probe hits'), _('If the auto-leveling probe registers too many hits during a print, the bot will pause printing and request manual intervention. To ignore probe hits while printing, specify a value of zero. The default value is 20. Only applies on bots with firmware-based auto-levelling and an auto-level probe installed.')) }}
-                {{ gpx_spinner_unit('autolevel.max_z_delta', _('mm'), 1, 0, 0, _('Auto-level max height difference'), _('Maximum vertical difference between any two probed leveling points. Default is 0.5mm.')) }}
+                {{ gpx_spinner_unit('max_zdelta', _('mm'), 1, 0, 0, _('Auto-level max height difference'), _('Maximum vertical difference between any two probed leveling points. Default is 0.5mm.')) }}
             </div>
             <div id="gpx_eeprom_heaters" class="tab-pane" data-toggle="tooltip" title="{{ _('These are the parameters to the proportional-integral-derivative controller for the hotends') }}">
                 <div class="well">
                     <legend>{{ _('Right (A) extruder PID values') }}</legend>
                     {% for term in "PID" %}
-                    {{ gpx_spinner('T0_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
+                    {{ gpx_spinner('eeprom.T0_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
                     {% endfor %}
                 </div>
                 <div class="well">
                     <legend>{{ _('Left (B) extruder PID values') }}</legend>
                     {% for term in "PID" %}
-                    {{ gpx_spinner('T1_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
+                    {{ gpx_spinner('eeprom.T1_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
                     {% endfor %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
     <div class="modal-footer">
