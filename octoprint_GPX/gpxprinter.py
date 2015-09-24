@@ -67,9 +67,6 @@ class GpxPrinter():
 
 	def write(self, data):
 		data = data.strip()
-		# strip checksum
-		if "*" in data:
-			data = data[:data.rfind("*")]
 		if (self.baudrate != self._baudrate):
 			try:
 				self._baudrate = self.baudrate
@@ -138,15 +135,20 @@ class GpxPrinter():
 			timeout = 2
 		else:
 			self._append(s)
-		try:
-			s = self.outgoing.get(timeout=timeout)
-			self._logger.debug("readline: %s" % s)
-			return s
-		except Queue.Empty:
-			if append_later is not None:
+		while True:
+			try:
+				s = self.outgoing.get(timeout=timeout)
+				if append_later is not None:
+					self._append(s)
+					s = append_later
+				self._logger.debug("readline: %s" % s)
+				return s
+			except Queue.Empty:
+				self._logger.debug("timeout")
+				if append_later is None:
+					return ''
 				self._append(append_later)
-			self._logger.debug("timeout")
-		return ''
+				append_later = None
 
 	def cancel(self):
 		if self._settings.get_boolean(['extended_stop_instead_of_abort']):

@@ -39,8 +39,18 @@ class GPXPlugin(
 		octoprint.plugin.ProgressPlugin
 		):
 
-	# StartupPlugin
-	def on_after_startup(self, *args, **kwargs):
+	def __init__(self):
+		self._initialized = False
+
+	# internal initialize
+	# we do it this weird way because __init__ gets called before the injected
+	# properties but on_after_startup can be too late in the case of auto
+	# connect on startup in which case the serial_factory is called first
+	def _initialize(self):
+		if self._initialized:
+			return
+		self._initialized = True
+
 		# get the plugin data folder
 		old_data_folder = os.path.join(self._settings.global_get_basefolder("base"), "gpxProfiles")
 		data_folder = self.get_plugin_data_folder()
@@ -67,6 +77,10 @@ class GPXPlugin(
 		# compile regex
 		self._regex_m73 = re.compile("N(\d+) M73 P(\d+)")
 
+	# StartupPlugin
+	def on_after_startup(self, *args, **kwargs):
+		self._initialize()
+
 	# Softwareupdate hook
 	def get_update_information(self, *args, **kwargs):
 		return dict(
@@ -90,6 +104,7 @@ class GPXPlugin(
 	def serial_factory(self, comm, port, baudrate, timeout, *args, **kwargs):
 		if not self._settings.get_boolean(["enabled"]) or port == 'VIRTUAL':
 			return None
+		self._initialize()
 		self.iniparser.read()
 		self.override_progress = self.iniparser.get("printer", "build_progress")
 		if self.override_progress is None:
@@ -100,6 +115,13 @@ class GPXPlugin(
 				raise IOError("AUTO port and baudrate not currently supported by GPX")
 			from .gpxprinter import GpxPrinter
 			self.printer = GpxPrinter(self, port, baudrate, timeout)
+
+			# it's easier to keep the counter straight if we ack every line
+			if comm is not None and getattr(comm, "_unknownCommandsNeedAck", None) is not None:
+			    comm._unknownCommandsNeedAck = True
+			else:
+			    self._logger.warn("comm object doesn't have _unknownCommandsNeedAck")
+
 			return self.printer
 		except Exception as e:
 			self._logger.info("Failed to connect to x3g e = %s." % e);
