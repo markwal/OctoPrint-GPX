@@ -61,7 +61,9 @@ $(function() {
         };
 
         self.showEepromDialog = function() {
-            $("#gpx_eeprom_settings").modal("show");
+            $("#gpx_eeprom_settings").modal({
+                minHeight: function() { return Math.min($.fn.modal.defaults.maxHeight(), 645) }
+            });
         };
 
         self.requestData = function() {
@@ -203,6 +205,7 @@ $(function() {
         self.eeprom = ko.mapping.fromJS(eeprom);
         self.eepromids = Object.keys(eeprom);
 
+        self.is_saving = ko.observable(false);
         self.z_hold = ko.observable(undefined);
         self.jkn_k = ko.observable(undefined);
         self.jkn_k2 = ko.observable(undefined);
@@ -230,7 +233,6 @@ $(function() {
         });
 
         self.requestEepromSettings = function() {
-            console.log(self.eepromids);
             $.ajax({
                 url: "/plugin/GPX/eeprombatch",
                 type: "POST",
@@ -259,7 +261,61 @@ $(function() {
         };
 
         self.saveEepromSettings = function() {
-            $("#gpx_eeprom_settings").modal("hide");
+            self.is_saving(true);
+            var bit = 0x1;
+            var axis_inversion = self.eeprom.AXIS_INVERSION() & 0x60;
+            var endstop_inversion = self.eeprom.ENDSTOP_INVERSION() & 0xe0;
+            for (axis in self.axes) {
+                self.eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis]((self.home[axis]() * self.steps_per_mm[axis]()) | 0);
+                if (self.invert_axis[axis]()) axis_inversion |= bit;
+                if (self.invert_endstop[axis]()) endstop_inversion |= bit;
+                bit <<= 1;
+            }
+            if (self.z_hold()) axis_inversion != 0x80;
+            self.eeprom.AXIS_INVERSION(axis_inversion);
+            self.eeprom.ENDSTOP_INVERSION(endstop_inversion);
+            self.eeprom.JKN_ADVANCE_K((self.jkn_k() * 100000) | 0);
+            self.eeprom.JKN_ADVANCE_K2((self.jkn_k2() * 100000) | 0);
+            self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X((self.toolhead_offset.X() * self.steps_per_mm.X()) | 0);
+            self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y((self.toolhead_offset.Y() * self.steps_per_mm.Y()) | 0);
+            self.eeprom.ALEVEL_MAX_ZDELTA((self.max_zdelta() * self.steps_per_mm.Z()) | 0);
+
+            var eeprom = {};
+            var update = false;
+            for (var id in self.eeprom_raw) {
+                if (self.eeprom[id]() != self.eeprom_raw[id]) {
+                    console.log("id: " + id + " value: " + self.eeprom[id]() + " orig: " + self.eeprom_raw[id]);
+                    eeprom[id] = self.eeprom[id]();
+                    update = true;
+                }
+            }
+            if (!update) {
+                $("#gpx_eeprom_settings").modal("hide");
+                self.is_saving(false);
+            }
+            else {
+                $.ajax({
+                    url: "/plugin/GPX/puteeprombatch",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json; charset=UTF-8",
+                    data: JSON.stringify(ko.mapping.toJS(eeprom)),
+                    error: function(response) {
+                        console.log(response);
+                        new PNotify({
+                            title: gettext("EEPROM not updated!"),
+                            text: gettext("Unable to save some or all of your changes. Please consult the log for details."),
+                            type: "error"
+                        });
+                    },
+                    success: function() {
+                        $("#gpx_eeprom_settings").modal("hide");
+                    },
+                    complete: function() {
+                        self.is_saving(false);
+                    }
+                });
+            }
         };
     };
 

@@ -355,6 +355,6 @@
     </div>
     <div class="modal-footer">
         <button class="btn" data-dismiss="modal">{{ _('Cancel') }}</button>
-        <button class="btn btn-primary" data-bind="click: saveEepromSettings">{{ _('Save') }}</button>
+        <button class="btn" data-bind="css: { 'btn-primary': !is_saving(), 'btn-warning': is_saving() }, enable: !is_saving(), click: saveEepromSettings">{{ _('Save') }}</button>
     </div>
 </div>
