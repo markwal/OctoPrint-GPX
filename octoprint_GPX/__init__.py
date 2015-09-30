@@ -344,22 +344,48 @@ class GPXPlugin(
 		self.iniparser.write()
 		return ('', 200)
 
-	@octoprint.plugin.BlueprintPlugin.route("/eeprombatch", methods=["POST"])
-	def batcheeprom(self, *args, **kwargs):
-		self._logger.info("batcheeprom")
+	def _check_for_json(self, request):
 		if not "Content-Type" in request.headers or not "application/json" in request.headers["Content-Type"]:
 			self._logger.debug("expected content-type application/json")
-			return make_response("Expected content-type JSON", 400)
+			return make_response("Expected content-type application/json", 400)
 		try:
 			self._logger.debug("request body '%s'" % request.data)
 			json = request.json
 		except BadRequest:
-			self._logger.debug("Didn't like the json")
+			self._logger.debug("Malformed JSON body in request")
 			return make_response("Malformed JSON body in request", 400)
+		return None
+
+	@octoprint.plugin.BlueprintPlugin.route("/eeprombatch", methods=["POST"])
+	def batcheeprom(self, *args, **kwargs):
+		self._logger.info("batcheeprom")
+		response = self._check_for_json(request)
+		if response is not None:
+			return response
+
 		response = {}
-		for eepromid in json:
+		for eepromid in request.json:
 			try:
 				response[eepromid] = gpx.read_eeprom(eepromid)
+			except ValueError:
+				SELF._LOGGER.WARN("UNKNOWN EEPROM id %s" % eepromid)
+			except gpx.UnknownFirmware:
+				self._logger.warn("Unrecognized firmware flavor or version.")
+				return make_response("Unrecognize firmware flavor or version", 400)
+		self._logger.debug("response = %s" % flask.jsonify(response))
+		return flask.jsonify(response)
+
+	@octoprint.plugin.BlueprintPlugin.route("/puteeprombatch", methods=["POST"])
+	def putbatcheeprom(self, *args, **kwargs):
+		self._logger.info("putbatcheeprom")
+		response = self._check_for_json(request)
+		if response is not None:
+			return response
+
+		response = {}
+		for eepromid in request.json:
+			try:
+				response[eepromid] = gpx.write_eeprom(eepromid, request.json[eepromid])
 			except ValueError:
 				self._logger.warn("Unknown EEPROM id %s" % eepromid)
 		self._logger.debug("response = %s" % flask.jsonify(response))

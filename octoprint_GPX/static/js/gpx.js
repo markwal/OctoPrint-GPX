@@ -256,7 +256,16 @@ $(function() {
                     self.toolhead_offset.X(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X() /self.steps_per_mm.X());
                     self.toolhead_offset.Y(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y() /self.steps_per_mm.Y());
                     self.max_zdelta(self.eeprom.ALEVEL_MAX_ZDELTA() / self.steps_per_mm.Z());
-                }
+                },
+                error: function(response) {
+                    console.log(response);
+                    new PNotify({
+                        title: gettext("Unable to read EEPROM"),
+                        text: gettext("Unable to read EEPROM settings. Perhaps because I don't have a matching EEPROM map for your firmware type or version."),
+                        type: "error"
+                    });
+                    $("#gpx_eeprom_settings").modal("hide");
+                },
             });
         };
 
@@ -308,7 +317,9 @@ $(function() {
                             type: "error"
                         });
                     },
-                    success: function() {
+                    success: function(response) {
+                        console.log(response);
+                        self.is_saving(false);
                         $("#gpx_eeprom_settings").modal("hide");
                     },
                     complete: function() {

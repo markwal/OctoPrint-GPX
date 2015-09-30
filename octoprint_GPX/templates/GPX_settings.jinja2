@@ -53,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group" data-toggle="tooltip" title="{{ _('EEPROM settings are onboard preferences stored in non-volatile memory in the printer. Before changing these settings, you should back them up to an SD card using the LCD menu.') }}">
             <div class="controls">
                 <button class="btn" data-bind="enable: isOperational(), click: showEepromDialog">{{ _('EEPROM Settings...') }}</button>
             </div>
