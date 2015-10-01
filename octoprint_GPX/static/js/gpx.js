@@ -250,7 +250,7 @@ $(function() {
                         self.invert_endstop[axis](!!(self.eeprom.ENDSTOP_INVERSION() & bit));
                         bit <<= 1;
                     }
-                    self.z_hold(!!(self.eeprom.AXIS_INVERSION() & 0x80));
+                    self.z_hold(!(self.eeprom.AXIS_INVERSION() & 0x80));
                     self.jkn_k(self.eeprom.JKN_ADVANCE_K() / 100000.0);
                     self.jkn_k2(self.eeprom.JKN_ADVANCE_K2() / 100000.0);
                     self.toolhead_offset.X(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X() /self.steps_per_mm.X());
@@ -280,7 +280,7 @@ $(function() {
                 if (self.invert_endstop[axis]()) endstop_inversion |= bit;
                 bit <<= 1;
             }
-            if (self.z_hold()) axis_inversion |= 0x80;
+            if (!self.z_hold()) axis_inversion |= 0x80;
             self.eeprom.AXIS_INVERSION(axis_inversion);
             self.eeprom.ENDSTOP_INVERSION(endstop_inversion);
             self.eeprom.JKN_ADVANCE_K((self.jkn_k() * 100000) | 0);
