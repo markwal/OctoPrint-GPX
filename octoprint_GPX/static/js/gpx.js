@@ -280,7 +280,7 @@ $(function() {
                 if (self.invert_endstop[axis]()) endstop_inversion |= bit;
                 bit <<= 1;
             }
-            if (self.z_hold()) axis_inversion != 0x80;
+            if (self.z_hold()) axis_inversion |= 0x80;
             self.eeprom.AXIS_INVERSION(axis_inversion);
             self.eeprom.ENDSTOP_INVERSION(endstop_inversion);
             self.eeprom.JKN_ADVANCE_K((self.jkn_k() * 100000) | 0);
