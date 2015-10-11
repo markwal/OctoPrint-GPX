@@ -194,6 +194,11 @@ $(function() {
             JKN_ADVANCE_K2: undefined,
             TOOLHEAD_OFFSET_SETTINGS_X: undefined,
             TOOLHEAD_OFFSET_SETTINGS_Y: undefined,
+            COOLING_FAN_DUTY_CYCLE: undefined,
+            T0_COOLING_ENABLE: undefined,
+            T0_COOLING_SETPOINT_C: undefined,
+            T1_COOLING_ENABLE: undefined,
+            T1_COOLING_SETPOINT_C: undefined,
         };
         for (axis in self.axes) {
             eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis] = undefined;
@@ -206,6 +211,7 @@ $(function() {
         self.eepromids = Object.keys(eeprom);
 
         self.is_saving = ko.observable(false);
+        self.show_fan_pwm = ko.computed(function() { return self.eeprom.COOLING_FAN_DUTY_CYCLE() != undefined && self.eeprom.COOLING_FAN_DUTY_CYCLE() != 255; }, this)
         self.z_hold = ko.observable(undefined);
         self.jkn_k = ko.observable(undefined);
         self.jkn_k2 = ko.observable(undefined);

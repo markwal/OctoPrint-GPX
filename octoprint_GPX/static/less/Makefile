@@ -1,5 +1,5 @@
-LESSC = lessc
-RM = rm
+LESSC = lessc --clean-css
+RM = rm -f
 OUTPUT_DIR = ../css
 
 LESS_FILES = $(wildcard *.less)

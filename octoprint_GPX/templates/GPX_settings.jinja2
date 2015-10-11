@@ -269,6 +269,7 @@
                 <li id="gpx_eeprom_accel_link"><a href="#gpx_eeprom_accel" data-toggle="tab">{{ _('Acceleration') }}</a>
                 <li id="gpx_eeprom_accel2_link"><a href="#gpx_eeprom_accel2" data-toggle="tab">{{ _('More Acceleration') }}</a>
                 <li id="gpx_eeprom_features_link"><a href="#gpx_eeprom_features" data-toggle="tab">{{ _('Firmware Features') }}</a>
+                <li id="gpx_eeprom_fans_link"><a href="#gpx_eeprom_fans" data-toggle="tab">{{ _('Fans') }}</a>
                 <li id="gpx_eeprom_heaters_link"><a href="#gpx_eeprom_heaters" data-toggle="tab">{{ _('Heaters') }}</a>
             </ul>
         </div>
@@ -336,6 +337,15 @@
                 {{ gpx_spinner_unit('eeprom.EXTRUDER_DEPRIME_STEPS_B', _('steps'), 1, 0, 65535, _('Left (B) extruder deprime distance'), _('When the firmware does an automatic retraction/deprime on the left extruder, it will retract this many steps.')) }}
                 {{ gpx_spinner_unit('eeprom.ALEVEL_MAX_ZPROBE_HITS', _('hits'), 0.1, 0, 200, _('Auto-level max Z probe hits'), _('If the auto-leveling probe registers too many hits during a print, the bot will pause printing and request manual intervention. To ignore probe hits while printing, specify a value of zero. The default value is 20. Only applies on bots with firmware-based auto-levelling and an auto-level probe installed.')) }}
                 {{ gpx_spinner_unit('max_zdelta', _('mm'), 1, 0, 0, _('Auto-level max height difference'), _('Maximum vertical difference between any two probed leveling points. Default is 0.5mm.')) }}
+            </div>
+            <div id="gpx_eeprom_fans" class="tab-pane">
+                {{ gpx_checkbox('eeprom.T0_COOLING_ENABLE', _('Enable right (A) extruder heatsink fan'), _('You basically want to leave this enabled since it helps avoid heat creep up the filament making jams and increasing the wear on your extruder.')) }}
+                {{ gpx_spinner_unit('eeprom.T0_COOLING_SETPOINT_C', _('C'), 1, 0, 300, _('Right (A) heatsink fan setpoint'), _('When the extruder temperature is greater than the setpoint, the heatsink fan is turned on. Default is 50C.')) }}
+                {{ gpx_checkbox('eeprom.T1_COOLING_ENABLE', _('Enable left (B) extruder heatsink fan'), _('You basically want to leave this enabled since it helps avoid heat creep up the filament making jams and increasing the wear on your extruder.')) }}
+                {{ gpx_spinner_unit('eeprom.T1_COOLING_SETPOINT_C', _('C'), 1, 0, 300, _('Left (B) heatsink fan setpoint'), _('When the extruder temperature is greater than the setpoint, the heatsink fan is turned on. Default is 50C.')) }}
+                <div data-bind="visible:show_fan_pwm">
+                    {{ gpx_spinner_unit('eeprom.COOLING_FAN_DUTY_CYCLE', _('%%'), 1, 0, 100, _('Filament cooling fan duty cycle'), _('Only in Sailfish 7.8 or later for CoreXY and CloneR1. Set the blower fan strength (duty cycle) when it is activated by the print commands. Set this value from off (0%%) to full on (100%%) or anywhere between.')) }}
+                </div>
             </div>
             <div id="gpx_eeprom_heaters" class="tab-pane" data-toggle="tooltip" title="{{ _('These are the parameters to the proportional-integral-derivative controller for the hotends') }}">
                 <div class="well">
