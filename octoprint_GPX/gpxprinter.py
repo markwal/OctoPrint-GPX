@@ -9,6 +9,8 @@ import time
 import Queue
 import re
 
+from octoprint.filemanager import FileDestinations
+
 try:
 	import gpx
 except:
@@ -19,6 +21,7 @@ class GpxPrinter():
 		self._logger = gpx_plugin._logger
 		self._settings = gpx_plugin._settings
 		self._printer = gpx_plugin._printer
+		self._bot_cancelled = False
 		if not gpx:
 			self._logger.warn("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
@@ -48,17 +51,37 @@ class GpxPrinter():
 			gpx.reset_ini()
 			gpx.read_ini(self.profile_path)
 
+	def _bot_reports_build_cancelled(self):
+		# sometimes the bot tells us the build is cancelled because it wants us
+		# to stop sending commands (user cancelled from LCD, something bad
+		# happend, etc.) but sometimes, it is just reporting that it complied
+		# with our request to stop. To avoid looping endlessly we only take action
+		# if there is something for us to stop.
+		if self._printer.is_printing():
+			currentOrigin = None
+			currentJob = self._printer.get_current_job()
+			if currentJob is not None and "file" in currentJob.keys():
+				currentJobFile = currentJob["file"]
+				if "origin" in currentJobFile.keys():
+					currentOrigin = currentJobFile["origin"]
+			if currentOrigin != FileDestinations.SDCARD:
+				self._bot_cancelled = True
+				self._printer.cancel_print()
+
 	def progress(self, percent):
-		# loop sending for a while if the queue isn't full or if the bot
-		# isn't listening
-		for i in range(0, 10):
-			try:
-				gpx.write("M73 P%d" % percent)
-				break
-			except gpx.BufferOverflow:
-				time.sleep(0.1)
-			except gpx.Timeout:
-				time.sleep(0.1)
+		try:
+			# loop sending for a while if the queue isn't full or if the bot
+			# isn't listening
+			for i in range(0, 10):
+				try:
+					gpx.write("M73 P%d" % percent)
+					break
+				except gpx.BufferOverflow:
+					time.sleep(0.1)
+				except gpx.Timeout:
+					time.sleep(0.1)
+		except gpx.CancelBuild:
+			self._bot_reports_build_cancelled()
 
 	def _append(self, s):
 		if (s != ''):
@@ -66,99 +89,111 @@ class GpxPrinter():
 				self.outgoing.put(item)
 
 	def write(self, data):
-		data = data.strip()
-		if (self.baudrate != self._baudrate):
-			try:
-				self._baudrate = self.baudrate
-				self._logger.info("new baudrate = %d" % self.baudrate)
-				gpx.set_baudrate(self.baudrate)
-				self.baudrateError = False
-			except ValueError:
-				self.baudrateError = True
-				self.outgoing.put('')
-				return
-
-		# look for a line number
-		# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
-		# no line number means OctoPrint is generating the gcode (reprap flavor)
-		match = self._regex_linenumber.match(data)
-		if match is not None:
-			lineno = int(match.group(1))
-			if lineno == 1 and not "M112" in data:
-				currentJob = self._printer.get_current_job()
-				if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"] and currentJob["file"]["name"] is not None:
-					build_name = os.path.splitext(os.path.basename(currentJob["file"]["name"]))[0]
-					gpx.write("(@build %s)" % build_name)
-					gpx.write("M136 (%s)" % build_name)
-				else:
-					gpx.write("M136")
-
-		# try to talk to the bot
 		try:
-			if match is None:
-				reprapSave = gpx.reprap_flavor(True)
-
-			# loop sending until the queue isn't full
-			retries = 0
-			while True:
+			data = data.strip()
+			if (self.baudrate != self._baudrate):
 				try:
-					self._append(gpx.write("%s" % data))
-					break
-				except gpx.BufferOverflow:
-					time.sleep(0.1)
-				except gpx.Timeout:
-					time.sleep(1)
-					retries += 1
-					if (retries >= 5):
-						raise
+					self._baudrate = self.baudrate
+					self._logger.info("new baudrate = %d" % self.baudrate)
+					gpx.set_baudrate(self.baudrate)
+					self.baudrateError = False
+				except ValueError:
+					self.baudrateError = True
+					self.outgoing.put('')
+					return
 
-		finally:
-			if match is None:
-				gpx.reprap_flavor(reprapSave)
+			# look for a line number
+			# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
+			# no line number means OctoPrint is generating the gcode (reprap flavor)
+			match = self._regex_linenumber.match(data)
+			if match is not None:
+				lineno = int(match.group(1))
+				if lineno == 1 and not "M112" in data:
+					self._bot_cancelled = False
+					currentJob = self._printer.get_current_job()
+					if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"] and currentJob["file"]["name"] is not None:
+						build_name = os.path.splitext(os.path.basename(currentJob["file"]["name"]))[0]
+						gpx.write("(@build %s)" % build_name)
+						gpx.write("M136 (%s)" % build_name)
+					else:
+						gpx.write("M136")
+
+			# try to talk to the bot
+			try:
+				if match is None:
+					reprapSave = gpx.reprap_flavor(True)
+
+				# loop sending until the queue isn't full
+				retries = 0
+				while True:
+					try:
+						self._append(gpx.write("%s" % data))
+						break
+					except gpx.BufferOverflow:
+						time.sleep(0.1)
+					except gpx.Timeout:
+						time.sleep(1)
+						retries += 1
+						if (retries >= 5):
+							raise
+
+			finally:
+				if match is None:
+					gpx.reprap_flavor(reprapSave)
+		except gpx.CancelBuild:
+			self._bot_reports_build_cancelled()
+
 
 	def readline(self):
-		while (self.baudrateError):
-			if (self._baudrate != self.baudrate):
-				gpx.write("M105")
-			return ''
 		try:
-			s = self.outgoing.get_nowait()
-			self._logger.debug("readline: %s" % s)
-			return s
-		except Queue.Empty:
-			pass
-		s = gpx.readnext()
-		timeout = self.timeout
-		append_later = None
-		if gpx.waiting():
-			append_later = s
-			timeout = 2
-		else:
-			self._append(s)
-		while True:
+			while (self.baudrateError):
+				if (self._baudrate != self.baudrate):
+					gpx.write("M105")
+				return ''
 			try:
-				s = self.outgoing.get(timeout=timeout)
-				if append_later is not None:
-					self._append(s)
-					s = append_later
+				s = self.outgoing.get_nowait()
 				self._logger.debug("readline: %s" % s)
 				return s
 			except Queue.Empty:
-				self._logger.debug("timeout")
-				if append_later is None:
-					return ''
-				self._append(append_later)
-				append_later = None
+				pass
+			s = gpx.readnext()
+			timeout = self.timeout
+			append_later = None
+			if gpx.waiting():
+				append_later = s
+				timeout = 2
+			else:
+				self._append(s)
+			while True:
+				try:
+					s = self.outgoing.get(timeout=timeout)
+					if append_later is not None:
+						self._append(s)
+						s = append_later
+					self._logger.debug("readline: %s" % s)
+					return s
+				except Queue.Empty:
+					self._logger.debug("timeout")
+					if append_later is None:
+						return ''
+					self._append(append_later)
+					append_later = None
+		except gpx.CancelBuild:
+			self._bot_reports_build_cancelled()
+			return '// echo: build cancelled'
 
 	def cancel(self):
-		if self._settings.get_boolean(['extended_stop_instead_of_abort']):
-			# make sure if you use this you have your own "gcode on cancel"
-			# that turns off motors and heaters
-			self._logger.debug("stop")
-			gpx.stop()
-		else:
-			self._logger.debug("abort")
-			gpx.abort()
+		self._logger.warn("Cancelling build %s", "by the printer" if self._bot_cancelled else "by OctoPrint")
+		if not self._bot_cancelled:
+			if self._settings.get_boolean(['extended_stop_instead_of_abort']):
+				# make sure if you use this you have your own "gcode on cancel"
+				# that turns off motors and heaters
+				self._logger.debug("stop")
+				gpx.stop()
+			else:
+				self._logger.debug("abort")
+				gpx.abort()
+		self._bot_cancelled = False;
 
 	def close(self):
 		gpx.disconnect()
