@@ -111,11 +111,12 @@ class GpxPrinter():
 				if lineno == 1 and not "M112" in data:
 					self._bot_cancelled = False
 					currentJob = self._printer.get_current_job()
-					if currentJob is not None and "file" in currentJob.keys() and "name" in currentJob["file"] and currentJob["file"]["name"] is not None:
-						build_name = os.path.splitext(os.path.basename(currentJob["file"]["name"]))[0]
+					try:
+						build_name = currentJob["file"]["name"]
+						build_name = os.path.splitext(os.path.basename(build_name))[0]
 						gpx.write("(@build %s)" % build_name)
 						gpx.write("M136 (%s)" % build_name)
-					else:
+					except KeyError:
 						gpx.write("M136")
 
 			# try to talk to the bot
@@ -152,7 +153,6 @@ class GpxPrinter():
 				return ''
 			try:
 				s = self.outgoing.get_nowait()
-				self._logger.debug("readline: %s" % s)
 				return s
 			except Queue.Empty:
 				pass
@@ -170,7 +170,6 @@ class GpxPrinter():
 					if append_later is not None:
 						self._append(s)
 						s = append_later
-					self._logger.debug("readline: %s" % s)
 					return s
 				except Queue.Empty:
 					self._logger.debug("timeout")
