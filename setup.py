@@ -25,6 +25,19 @@ plugin_license = "AGPLv3"
 
 plugin_additional_data = []
 
+plugin_ext_sources = [
+	'GPX/src/pymodule/gpxmodule.c',
+	'GPX/src/shared/config.c',
+	'GPX/src/shared/opt.c',
+	'GPX/src/gpx/vector.c',
+	'GPX/src/gpx/gpx.c',
+	'GPX/src/gpx/gpx-main.c',
+	]
+
+if sys.platform == 'win32':
+	plugin_ext_sources.append('GPX/src/gpx/winsio.c')
+
+
 ########################################################################################################################
 
 def package_data_dirs(source, sub_folders):
@@ -77,21 +90,9 @@ def params():
 		"octoprint.plugin": ["%s = %s" % (plugin_identifier, plugin_package)]
 	}
 
-	ext_sources = [
-			'GPX/src/pymodule/gpxmodule.c',
-			'GPX/src/shared/config.c',
-			'GPX/src/shared/opt.c',
-			'GPX/src/gpx/vector.c',
-			'GPX/src/gpx/gpx.c',
-			'GPX/src/gpx/gpx-main.c',
-			]
-
-	if sys.platform == 'win32':
-		ext_sources.append('GPX/src/gpx/winsio.c')
-
 	ext_modules = [
 		setuptools.Extension('gpx',
-		sources = ext_sources,
+		sources = plugin_ext_sources,
 		extra_compile_args = ['-DGPX_VERSION="\\"OctoPrint\\""', '-DSERIAL_SUPPORT', '-fvisibility=hidden', '-IGPX/src/shared', '-IGPX/src/gpx'],
 		extra_link_args = ['-fvisibility=hidden'])
 		]
