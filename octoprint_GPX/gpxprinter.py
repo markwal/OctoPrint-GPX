@@ -69,19 +69,23 @@ class GpxPrinter():
 				self._printer.cancel_print()
 
 	def progress(self, percent):
-		try:
-			# loop sending for a while if the queue isn't full or if the bot
-			# isn't listening
-			for i in range(0, 10):
-				try:
-					gpx.write("M73 P%d" % percent)
-					break
-				except gpx.BufferOverflow:
-					time.sleep(0.1)
-				except gpx.Timeout:
-					time.sleep(0.1)
-		except gpx.CancelBuild:
-			self._bot_reports_build_cancelled()
+		# we don't want the progress event to pre-empt the build start or
+        # override the build end notification and the M73 causes a build start
+        # if we aren't already running one
+		if gpx.build_started():
+			try:
+				# loop sending for a while if the queue isn't full or if the bot
+				# isn't listening
+				for i in range(0, 10):
+					try:
+						gpx.write("M73 P%d" % percent)
+						break
+					except gpx.BufferOverflow:
+						time.sleep(0.1)
+					except gpx.Timeout:
+						time.sleep(0.1)
+			except gpx.CancelBuild:
+				self._bot_reports_build_cancelled()
 
 	def _append(self, s):
 		if (s != ''):
@@ -114,10 +118,10 @@ class GpxPrinter():
 					try:
 						build_name = currentJob["file"]["name"]
 						build_name = os.path.splitext(os.path.basename(build_name))[0]
-						gpx.write("(@build %s)" % build_name)
-						gpx.write("M136 (%s)" % build_name)
 					except KeyError:
-						gpx.write("M136")
+						build_name = "OctoPrint"
+					gpx.write('(@build "%s")' % build_name)
+					gpx.write("M136 (%s)" % build_name)
 
 			# try to talk to the bot
 			try:
