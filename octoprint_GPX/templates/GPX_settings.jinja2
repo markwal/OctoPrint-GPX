@@ -360,6 +360,12 @@
                     {{ gpx_spinner('eeprom.T1_EXTRUDER_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
                     {% endfor %}
                 </div>
+                <div class="well">
+                    <legend>{{ _('Heated build platform PID values') }}</legend>
+                    {% for term in "PID" %}
+                    {{ gpx_spinner('eeprom.HBP_{}_TERM'.format(term), 0.01, 0, 0, _('{} parameter'.format(term))) }}
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
