@@ -1,4 +1,4 @@
-SUBDIRS = GPX octoprint_GPX/static/less
+SUBDIRS = GPX/build octoprint_GPX/static/less
 
 .PHONY: all clean test machines
 

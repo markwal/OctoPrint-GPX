@@ -8,6 +8,7 @@ import logging
 import time
 import Queue
 import re
+import datetime
 
 from octoprint.filemanager import FileDestinations
 
@@ -81,7 +82,7 @@ class GpxPrinter():
 						gpx.write("M73 P%d" % percent)
 						break
 					except gpx.BufferOverflow:
-						time.sleep(0.1)
+						time.sleep(0.01)
 					except gpx.Timeout:
 						time.sleep(0.1)
 			except gpx.CancelBuild:
@@ -129,17 +130,33 @@ class GpxPrinter():
 					reprapSave = gpx.reprap_flavor(True)
 
 				# loop sending until the queue isn't full
-				retries = 0
+				timeout_retries = 0
+				bo_retries = 0
 				while True:
 					try:
 						self._append(gpx.write("%s" % data))
 						break
 					except gpx.BufferOverflow:
-						time.sleep(0.1)
+						# at first, let's do quick retries in case we're doing
+						# lots of short movements and we're just ahead of the
+						# bot
+						bo_retries += 1
+						if bo_retries < 10:
+							continue
+
+						# then let's slow down so we're not spinning, could be
+						# queued with lots of long moves or we could be paused
+						if gpx.build_paused():
+							if bo_retries == 11:
+								self._append("// echo: print paused at bot")
+							time.sleep(1) # 1 sec
+						elif bo_retries == 11:
+							self._append("// echo: buffer overflow")
+						time.sleep(0.1) # 100 ms
 					except gpx.Timeout:
 						time.sleep(1)
-						retries += 1
-						if (retries >= 5):
+						timeout_retries += 1
+						if (timeout_retries >= 5):
 							raise
 
 			finally:
@@ -151,36 +168,27 @@ class GpxPrinter():
 
 	def readline(self):
 		try:
-			while (self.baudrateError):
+			if (self.baudrateError):
 				if (self._baudrate != self.baudrate):
 					gpx.write("M105")
 				return ''
+
 			try:
-				s = self.outgoing.get_nowait()
-				return s
+				return self.outgoing.get_nowait()
 			except Queue.Empty:
 				pass
-			s = gpx.readnext()
-			timeout = self.timeout
-			append_later = None
-			if gpx.waiting():
-				append_later = s
-				timeout = 2
-			else:
-				self._append(s)
+
 			while True:
+				if gpx.listing_files():
+					return gpx.readnext()
+
+				timeout = 2 if gpx.waiting else self.timeout
 				try:
-					s = self.outgoing.get(timeout=timeout)
-					if append_later is not None:
-						self._append(s)
-						s = append_later
-					return s
+					return self.outgoing.get(timeout=timeout)
 				except Queue.Empty:
-					self._logger.debug("timeout")
-					if append_later is None:
-						return ''
-					self._append(append_later)
-					append_later = None
+					if gpx.waiting():
+						return gpx.readnext()
+
 		except gpx.CancelBuild:
 			self._bot_reports_build_cancelled()
 			return '// echo: build cancelled'

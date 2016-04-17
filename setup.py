@@ -27,7 +27,7 @@ plugin_additional_data = []
 
 plugin_ext_sources = [
 	'GPX/src/pymodule/gpxmodule.c',
-	'GPX/src/shared/config.c',
+	'GPX/src/shared/machine_config.c',
 	'GPX/src/shared/opt.c',
 	'GPX/src/gpx/vector.c',
 	'GPX/src/gpx/gpx.c',
