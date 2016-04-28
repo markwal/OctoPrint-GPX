@@ -146,12 +146,15 @@ class GpxPrinter():
 
 						# then let's slow down so we're not spinning, could be
 						# queued with lots of long moves or we could be paused
-						if gpx.build_paused():
-							if bo_retries == 11:
-								self._append("// echo: print paused at bot")
-							time.sleep(1) # 1 sec
-						elif bo_retries == 11:
-							self._append("// echo: buffer overflow")
+						try:
+							if gpx.build_paused():
+								if bo_retries == 11:
+									self._append("// echo: print paused at bot")
+								time.sleep(1) # 1 sec
+							elif bo_retries == 11:
+								self._append("// echo: buffer overflow")
+						except IOError:
+							pass
 						time.sleep(0.1) # 100 ms
 					except gpx.Timeout:
 						time.sleep(1)
@@ -178,16 +181,14 @@ class GpxPrinter():
 			except Queue.Empty:
 				pass
 
-			while True:
-				if gpx.listing_files():
-					return gpx.readnext()
+			if gpx.listing_files():
+				return gpx.readnext()
 
-				timeout = 2 if gpx.waiting else self.timeout
-				try:
-					return self.outgoing.get(timeout=timeout)
-				except Queue.Empty:
-					if gpx.waiting():
-						return gpx.readnext()
+			timeout = 2 if gpx.waiting else self.timeout
+			try:
+				return self.outgoing.get(timeout=timeout)
+			except Queue.Empty:
+				return gpx.readnext()
 
 		except gpx.CancelBuild:
 			self._bot_reports_build_cancelled()
@@ -200,10 +201,10 @@ class GpxPrinter():
 				# make sure if you use this you have your own "gcode on cancel"
 				# that turns off motors and heaters
 				self._logger.debug("stop")
-				gpx.stop()
+				self._append(gpx.stop())
 			else:
 				self._logger.debug("abort")
-				gpx.abort()
+				self._append(gpx.abort())
 		self._bot_cancelled = False;
 
 	def close(self):
