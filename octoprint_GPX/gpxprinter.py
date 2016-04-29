@@ -137,21 +137,13 @@ class GpxPrinter():
 						self._append(gpx.write("%s" % data))
 						break
 					except gpx.BufferOverflow:
-						# at first, let's do quick retries in case we're doing
-						# lots of short movements and we're just ahead of the
-						# bot
 						bo_retries += 1
-						if bo_retries < 10:
-							continue
-
-						# then let's slow down so we're not spinning, could be
-						# queued with lots of long moves or we could be paused
 						try:
 							if gpx.build_paused():
-								if bo_retries == 11:
+								if bo_retries == 1:
 									self._append("// echo: print paused at bot")
 								time.sleep(1) # 1 sec
-							elif bo_retries == 11:
+							elif bo_retries == 1:
 								self._append("// echo: buffer overflow")
 						except IOError:
 							pass

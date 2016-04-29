@@ -2,13 +2,17 @@ SUBDIRS = GPX/build octoprint_GPX/static/less
 
 .PHONY: all clean test machines
 
-all:
-	python setup.py develop
+all: GPX/build
 	for dir in $(SUBDIRS); do \
 		echo "Entering $$dir"; \
 		make -C $$dir $@; \
 		echo "Exiting $$dir"; \
 	done
+	python setup.py develop
+
+GPX/build: GPX/configure
+	mkdir -p GPX/build
+	cd GPX/build ; ../configure ; cd ../..
 
 clean:
 	python setup.py clean
