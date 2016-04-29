@@ -1,7 +1,8 @@
 include *.txt
 recursive-include octoprint_GPX *.js *.jinja2 *.less *.css
-recursive-include GPX *
-global-exclude *_obj/* *build/*
+recursive-include GPX *.h
+recursive-exclude GPX/build *
+include GPX/build/src/shared/config.h
 include versioneer.py
 include octoprint_GPX/_version.py
 include README.md
