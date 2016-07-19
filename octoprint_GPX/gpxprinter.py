@@ -95,6 +95,7 @@ class GpxPrinter():
 
 	def write(self, data):
 		try:
+			rval = len(data)
 			data = data.strip()
 			if (self.baudrate != self._baudrate):
 				try:
@@ -105,7 +106,7 @@ class GpxPrinter():
 				except ValueError:
 					self.baudrateError = True
 					self.outgoing.put('')
-					return
+					return 0
 
 			# look for a line number
 			# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
@@ -159,7 +160,7 @@ class GpxPrinter():
 					gpx.reprap_flavor(reprapSave)
 		except gpx.CancelBuild:
 			self._bot_reports_build_cancelled()
-
+		return rval
 
 	def readline(self):
 		try:
