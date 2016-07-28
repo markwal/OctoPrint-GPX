@@ -144,8 +144,6 @@ class GpxPrinter():
 								if bo_retries == 1:
 									self._append("// echo: print paused at bot")
 								time.sleep(1) # 1 sec
-							elif bo_retries == 1:
-								self._append("// echo: buffer overflow")
 						except IOError:
 							pass
 						time.sleep(0.1) # 100 ms
