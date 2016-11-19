@@ -119,7 +119,7 @@ class GpxPrinter():
 					currentJob = self._printer.get_current_job()
 					try:
 						build_name = currentJob["file"]["name"]
-						build_name = os.path.splitext(os.path.basename(build_name))[0]
+						build_name = os.path.splitext(os.path.basename(build_name))[0] if build_name else "OctoPrint"
 					except KeyError:
 						build_name = "OctoPrint"
 					gpx.write('(@build "%s")' % build_name)
