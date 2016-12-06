@@ -67,7 +67,11 @@ $(function() {
         };
 
         self.requestData = function() {
-            $.getJSON("/plugin/GPX/ini", function(data) {
+            OctoPrint.get("plugin/GPX/ini", {
+                dataType: "json",
+                contentType: "application/json; charset=UTF-8",
+            })
+            .done(function(data) {
                 ko.mapping.fromJS(data, self.ini);
             });
         };
@@ -85,15 +89,11 @@ $(function() {
 
         self.onSettingsBeforeSave = function() {
             var ini = ko.mapping.toJS(self.ini);
-            $.ajax({
-                url: "/plugin/GPX/ini",
-                type: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=UTF-8",
-                data: JSON.stringify(ko.mapping.toJS(ini)),
-                success: function(response) {
-                }
-            });
+            OctoPrint.postJson("plugin/GPX/ini", ini, {dataType: "text"})
+                .fail(function() {
+                    var text = gettext("There was unexpected error while saving the GPX settings, please consult the logs.");
+                    new PNotify({title: gettext("GPX settings failed"), text: text, type: "error", hide: false});
+                });
         };
     };
 
@@ -126,28 +126,26 @@ $(function() {
         });
 
         self.requestMachine = function() {
-            $.getJSON("/plugin/GPX/machine/" + self.gpx.ini.printer.machine_type(), function(data) {
-                ko.mapping.fromJS(data, self.machine);
-            });
+            OctoPrint.get("plugin/GPX/machine/" + self.gpx.ini.printer.machine_type(), {dataType: "json"})
+                .done(function(data) {
+                    ko.mapping.fromJS(data, self.machine);
+                });
         };
 
         self.requestMachineDefaults = function() {
-            $.getJSON("/plugin/GPX/defaultmachine/" + self.gpx.ini.printer.machine_type(), function(data) {
-                ko.mapping.fromJS(data, self.machine);
-            });
+            OctoPrint.get("plugin/GPX/defaultmachine/" + self.gpx.ini.printer.machine_type(), {dataType: "json"})
+                .done(function(data) {
+                    ko.mapping.fromJS(data, self.machine);
+                });
         };
 
         self.saveMachineSettings = function() {
             var machine = ko.mapping.toJS(self.machine);
-            $.ajax({
-                url: "/plugin/GPX/machine/" + self.gpx.ini.printer.machine_type(),
-                type: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=UTF-8",
-                data: JSON.stringify(ko.mapping.toJS(machine)),
-                success: function(response) {
-                }
-            });
+            OctoPrint.postJson("plugin/GPX/machine/" + self.gpx.ini.printer.machine_type(), machine, {dataType: "text"})
+                .fail(function() {
+                    var text = gettext("There was unexpected error while saving the GPX machine definition, please consult the logs.");
+                    new PNotify({title: gettext("GPX machine settings failed"), text: text, type: "error", hide: false});
+                });
             $("#gpx_machine_settings").modal("hide");
         };
     };
@@ -242,13 +240,8 @@ $(function() {
         });
 
         self.requestEepromSettings = function() {
-            $.ajax({
-                url: "/plugin/GPX/eeprombatch",
-                type: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=UTF-8",
-                data: JSON.stringify(self.eepromids),
-                success: function(response) {
+            OctoPrint.postJson("plugin/GPX/eeprombatch", self.eepromids, {dataType: "json"})
+                .done(function(response) {
                     self.eeprom_raw = response;
                     ko.mapping.fromJS(response, self.eeprom);
                     bit = 0x1;
@@ -265,8 +258,7 @@ $(function() {
                     self.toolhead_offset.X(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X() /self.steps_per_mm.X());
                     self.toolhead_offset.Y(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y() /self.steps_per_mm.Y());
                     self.max_zdelta(self.eeprom.ALEVEL_MAX_ZDELTA() / self.steps_per_mm.Z());
-                },
-                error: function(response) {
+                }).fail(function(response) {
                     console.log(response);
                     new PNotify({
                         title: gettext("Unable to read EEPROM"),
@@ -274,8 +266,7 @@ $(function() {
                         type: "error"
                     });
                     $("#gpx_eeprom_settings").modal("hide");
-                },
-            });
+                });
         };
 
         self.saveEepromSettings = function() {
@@ -312,29 +303,21 @@ $(function() {
                 self.is_saving(false);
             }
             else {
-                $.ajax({
-                    url: "/plugin/GPX/puteeprombatch",
-                    type: "POST",
-                    dataType: "json",
-                    contentType: "application/json; charset=UTF-8",
-                    data: JSON.stringify(ko.mapping.toJS(eeprom)),
-                    error: function(response) {
+                OctoPrint.postJson("plugin/GPX/puteeprombatch", eeprom, {dataType: "text"})
+                    .done(function(response) {
+                        console.log(response);
+                        self.is_saving(false);
+                        $("#gpx_eeprom_settings").modal("hide");
+                    }).fail(function(response) {
                         console.log(response);
                         new PNotify({
                             title: gettext("EEPROM not updated!"),
                             text: gettext("Unable to save some or all of your changes. Please consult the log for details."),
                             type: "error"
                         });
-                    },
-                    success: function(response) {
-                        console.log(response);
+                    }).always(function() {
                         self.is_saving(false);
-                        $("#gpx_eeprom_settings").modal("hide");
-                    },
-                    complete: function() {
-                        self.is_saving(false);
-                    }
-                });
+                    });
             }
         };
     };
