@@ -114,7 +114,7 @@ class GpxPrinter():
 			match = self._regex_linenumber.match(data)
 			if match is not None:
 				lineno = int(match.group(1))
-				if lineno == 1 and not "M112" in data:
+				if lineno == 1 and not "M115" in data:
 					self._bot_cancelled = False
 					currentJob = self._printer.get_current_job()
 					try:
