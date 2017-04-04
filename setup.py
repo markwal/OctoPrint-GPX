@@ -32,6 +32,7 @@ plugin_ext_sources = [
 	'GPX/src/gpx/vector.c',
 	'GPX/src/gpx/gpx.c',
 	'GPX/src/gpx/gpx-main.c',
+	'GPX/src/gpx/gpxresp.c',
 	]
 
 if sys.platform == 'win32':
