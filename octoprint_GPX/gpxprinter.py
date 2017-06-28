@@ -69,6 +69,11 @@ class GpxPrinter():
 				self._bot_cancelled = True
 				self._printer.cancel_print()
 
+	def clear_bot_cancelled(self):
+		# called when a new print is started. We'll just assume the user knows
+		# what they're doing and the cancel has completed.
+		self._bot_cancelled = False
+
 	def progress(self, percent):
 		# we don't want the progress event to pre-empt the build start or
         # override the build end notification and the M73 causes a build start
@@ -112,18 +117,6 @@ class GpxPrinter():
 			# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
 			# no line number means OctoPrint is generating the gcode (reprap flavor)
 			match = self._regex_linenumber.match(data)
-			if match is not None:
-				lineno = int(match.group(1))
-				if lineno == 1 and not "M115" in data:
-					self._bot_cancelled = False
-					currentJob = self._printer.get_current_job()
-					try:
-						build_name = currentJob["file"]["name"]
-						build_name = os.path.splitext(os.path.basename(build_name))[0] if build_name else "OctoPrint"
-					except KeyError:
-						build_name = "OctoPrint"
-					gpx.write('(@build "%s")' % build_name)
-					gpx.write("M136 (%s)" % build_name)
 
 			# try to talk to the bot
 			try:

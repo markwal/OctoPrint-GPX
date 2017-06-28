@@ -184,10 +184,20 @@ class GPXPlugin(
 		return None
 
 	# protocol script hook
-	def cancel_sync(self, comm, script_type, script_name, *args, **kwargs):
-		if not script_type == "gcode" or not script_name == "afterPrintCancelled":
-			return None
-		return "(@clear_cancel)", None
+	def gcode_scripts(self, comm, script_type, script_name, *args, **kwargs):
+		if script_type == "gcode":
+			if script_name == "afterPrintCancelled":
+				return "(@clear_cancel)", None
+			if script_name == "beforePrintStarted":
+				self.printer.clear_bot_cancelled()
+				currentJob = self._printer.get_current_job()
+				try:
+					build_name = currentJob["file"]["name"]
+					build_name = os.path.splitext(os.path.basename(build_name))[0] if build_name else "OctoPrint"
+				except KeyError:
+					build_name = "OctoPrint"
+				return '(@build "{build_name}")\nM136 ({build_name})'.format(build_name=build_name), None
+		return None
 
 	# AssetPlugin
 	def get_assets(self, *args, **kwargs):
@@ -426,7 +436,7 @@ def __plugin_load__():
 			"octoprint.filemanager.extension_tree": plugin.get_extension_tree,
 			"octoprint.plugin.softwareupdate.check_config": plugin.get_update_information,
 			"octoprint.comm.protocol.gcode.queuing": plugin.rewrite_m73,
-			"octoprint.comm.protocol.scripts": plugin.cancel_sync
+			"octoprint.comm.protocol.scripts": plugin.gcode_scripts
 		}
 
 __plugin_name__ = "GPX"
