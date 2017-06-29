@@ -168,11 +168,12 @@ class GpxPrinter():
 			if gpx.listing_files():
 				return gpx.readnext()
 
-			timeout = 2 if gpx.waiting else self.timeout
-			try:
-				return self.outgoing.get(timeout=timeout)
-			except Queue.Empty:
-				return gpx.readnext()
+			while True:
+				timeout = 2 if gpx.waiting else self.timeout
+				try:
+					return self.outgoing.get(timeout=timeout)
+				except Queue.Empty:
+					self._append(gpx.readnext())
 
 		except gpx.CancelBuild:
 			self._bot_reports_build_cancelled()
