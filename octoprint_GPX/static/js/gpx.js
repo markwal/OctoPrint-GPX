@@ -26,6 +26,7 @@ $(function() {
 
         self.settingsViewModel = parameters[0];
         self.isOperational = parameters[1].isOperational;
+        self.haveData = false;
 
         var iniInitial = {
             printer: {
@@ -73,6 +74,7 @@ $(function() {
             })
             .done(function(data) {
                 ko.mapping.fromJS(data, self.ini);
+                self.haveData = true;
             });
         };
 
@@ -88,12 +90,14 @@ $(function() {
         self.onSettingsShown = self.requestData;
 
         self.onSettingsBeforeSave = function() {
-            var ini = ko.mapping.toJS(self.ini);
-            OctoPrint.postJson("plugin/GPX/ini", ini, {dataType: "text"})
-                .fail(function() {
-                    var text = gettext("There was unexpected error while saving the GPX settings, please consult the logs.");
-                    new PNotify({title: gettext("GPX settings failed"), text: text, type: "error", hide: false});
-                });
+            if (self.haveData) {
+                var ini = ko.mapping.toJS(self.ini);
+                OctoPrint.postJson("plugin/GPX/ini", ini, {dataType: "text"})
+                    .fail(function() {
+                        var text = gettext("There was unexpected error while saving the GPX settings, please consult the logs.");
+                        new PNotify({title: gettext("GPX settings failed"), text: text, type: "error", hide: false});
+                    });
+            }
         };
     };
 
