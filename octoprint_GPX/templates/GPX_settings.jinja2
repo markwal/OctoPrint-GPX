@@ -7,6 +7,11 @@
                     <input type="checkbox" data-bind="checked: settings.plugins.GPX.enabled"> {{ _('Enable GPX') }}
                 </label>
             </div>
+            <div class="controls" data-toggle="tooltip" title="{{ _("There's a lot of start gcode out there that doesn't assert the entire coordinate system off the bat, letting left over state from manual moves and/or prints confuse things. This checkbox forces a G92 X0 Y0 Z0 A0 B0 to occur before anything else. Do *not* use if you're continuing a print with manually edited g-code.") }}">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.plugins.GPX.clear_coords_on_print_start"> {{ _('Clear coordinate system before print start') }}
+                </label>
+            </div>
             <div class="controls" data-toggle="tooltip" title="{{ _('Include prereleases when checking for updates') }}">
                 <label class="checkbox">
                     <input type="checkbox" data-bind="checked: settings.plugins.GPX.prerelease"> {{ _('Show pre-release updates') }}
