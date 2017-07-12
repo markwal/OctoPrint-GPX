@@ -1,7 +1,7 @@
 # OctoPrint-GPX
 An OctoPrint plugin for MakerBot (prior to 5th gen) and clones.
 
-It uses GPX to translate gcode to s3g underneath OctoPrint in the communications
+It uses GPX to translate gcode to x3g underneath OctoPrint in the communications
 layer.
 
 [GPX](https://github.com/whpthomas/GPX) is a *G*code *P*ostprocessing to *X*3g
@@ -10,11 +10,6 @@ for describing toolpaths in 3d printers which is derived from the gcode used in
 CNC machines.  X3g is an extension to the s3g protocol which was named for the
 Sanguino v3 which was in use at the time as the bot's controller.
 
-This plugin requires brand new hooks that are in the 1.2.0 version of
-OctoPrint. As of this writing, 1.2.0 has been officially released, but the OctoPi
-image doesn't yet include it.  If you pick up a recent nightly it should be there
-or if not, it's relatively easy to update.
-
 ## Caveats
 I've only tested this on one config:
 Raspberry Pi set up via the OctoPi image
@@ -22,25 +17,9 @@ FlashForge Creator Pro running Sailfish 7.7
 
 ## Installing
 1. Start with OctoPi: Get your Raspberry Pi up and running by following the
-   instructions on [OctoPi](https://github.com/guysoft/OctoPi)
+   instructions on [OctoPi](https://octopi.octoprint.org)
 
-2. Update OctoPrint to at least 1.2.0 if it isn't already. Instructions are in
-    the [OctoPrint wiki FAQ](https://github.com/foosel/OctoPrint/wiki/FAQ). From
-    here (1.2.0) on out, it'll be even easier because you can use the builtin
-    softwareupdate plugin right from the browser.
-
-    ```
-    source ~/oprint/bin/activate
-    cd ~/OctoPrint
-    git pull
-    python setup.py clean
-    python setup.py install
-    sudo service octoprint restart
-    ```
-
-    Don't forget to refresh your browser.
-
-4. Get the GPX plugin. You get plugins by using the Plugin Manager in OctoPrint.
+2. Get the GPX plugin. You get plugins by using the Plugin Manager in OctoPrint.
 
     * Open a browser to octoprint (http://ipaddress/) and login
     * Choose "Settings" from the top bar
@@ -50,15 +29,27 @@ FlashForge Creator Pro running Sailfish 7.7
     * Restart octoprint (if you're using OctoPi: System.Restart from the menu bar)
     * Refresh your browser
 
-5. Set some settings.
+3. Set and save the GPX settings.
 
-    * Like step 4, get to Settings
-    * Click "GPX" on the left nav
-    * Choose your printer type and gcode flavor, leave the rest on default
+    * OctoPrint-\>Settings-\>GPX
+    * Pick your machine type: *Replicator 1 Dual* (if you have a clone, it's
+      most likely a Rep 1 clone even if it was sold as a Rep 2 clone)
+    * Set the gcode flavor to "RepRap" and your slicer too. The only reason to
+      use MakerBot flavor is if you are using a MakerBot slicer.
 
-6. Try connecting
+4. Try connecting
+
     Choose a port and baudrate.  I don't have AUTO working yet.  115200 works
     on my bot.
+
+5. Upload gcode from your slicer to OctoPrint.
+
+    OctoPrint only understands ".gcode" and then GPX translates it to x3g.
+    Don't upload x3g to OctoPrint. That won't work.
+
+    On the other hand, only use ".x3g" with the printer's SD card. It doesn't
+    understand gcode and GPX running in OctoPrint can't help the firmware with
+    it directly on the SD card.
 
 ## Known issues
 * Upload to SD doesn't work. It can't work directly because SailFish removed
@@ -67,13 +58,10 @@ FlashForge Creator Pro running Sailfish 7.7
   [Google Groups Post](https://groups.google.com/d/msg/jetty-firmware/KCIfkv02MPY/SX17OBhXoJMJ)
   I'm working on FlashAir support
 * Can't delete SD files for a similar reason
-* I really wouldn't recommend printing directly from the gcode file rather than
-  an x3g on the SD card.  Besides Sailfish recommends against anything but SD,
-  there's also the fact that this is fairly new code and you wouldn't want a
-  communications glitch to ruin your print several hours in. And I expect one.
-  More than likely pretty quickly, but worst case, just before the build is
-  done.  Although lately I've been doing all my printing directly from OctoPrint
-  for testing this plugin and so far, so good.
+* For prints that have small segments that don't require full stops to move to
+  the next one (ie cylinder with a smooth surface), you'll be happier printing
+  off of the printer's SD card. Printing over serial peaks out at about 60
+  segments per second.
 * Upload to OctoPrint and then print works with .gcode, not with .x3g. The GPX
   layer converts the gcode to x3g when you print from OctoPrint.  I need to
   figure out a way to make the UI more graceful about this. To review: If the
