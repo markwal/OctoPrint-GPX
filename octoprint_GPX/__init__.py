@@ -111,8 +111,19 @@ class GPXPlugin(
 			self.override_progress = True
 		self._logger.info("Connecting through x3g.")
 		try:
+			if port is None or port == 'AUTO':
+				try:
+					import glob
+					ports = glob.glob("/dev/serial/by-id/*MakerBot_Industries_The_Replicator*")
+					if ports:
+						port = os.path.normpath(os.path.join("/dev/serial/by-id/", os.readlink(ports[0])))
+				except:
+					# oh well, it was worth a try
+					self._logger.debug("Failed to discover port via /dev/serial/by-id")
+			if not baudrate:
+				baudrate = 115200
 			if port is None or port == 'AUTO' or baudrate is None or baudrate == 0:
-				raise IOError("AUTO port and baudrate not currently supported by GPX")
+				raise IOError("GPX plugin not able to discover AUTO port and/or baudrate. Please choose specific values for them.")
 			from .gpxprinter import GpxPrinter
 			self.printer = GpxPrinter(self, port, baudrate, timeout)
 
