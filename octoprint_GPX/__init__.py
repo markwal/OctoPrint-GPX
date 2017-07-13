@@ -137,7 +137,12 @@ class GPXPlugin(
 
 	# SettingsPlugin
 	def get_settings_defaults(self, *args, **kwargs):
-		return dict(enabled=True, prerelease=False, verbose=False, connection_pause=2.0)
+		return dict(
+				enabled=True,
+				prerelease=False,
+				verbose=False,
+				connection_pause=2.0,
+				clear_coords_on_print_start=True)
 
 	def on_settings_save(self, data, *args, **kwargs):
 		# do the super, see https://thingspython.wordpress.com/2010/09/27/another-super-wrinkle-raising-typeerror
@@ -196,7 +201,10 @@ class GPXPlugin(
 					build_name = os.path.splitext(os.path.basename(build_name))[0] if build_name else "OctoPrint"
 				except KeyError:
 					build_name = "OctoPrint"
-				return '(@build "{build_name}")\nM136 ({build_name})'.format(build_name=build_name), None
+				clear_coords = ""
+				if self._settings.get_boolean(["clear_coords_on_print_start"]):
+					clear_coords="\nG92 X0 Y0 Z0 A0 B0"
+				return '(@build "{build_name}")\nM136 ({build_name}){clear_coords}'.format(build_name=build_name, clear_coords=clear_coords), None
 		return None
 
 	# AssetPlugin
