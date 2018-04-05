@@ -60,6 +60,7 @@ class IniParser():
 			if not section.items:
 				raise ValueError("Invalid section")
 			for option, value in section.items():
+				self._logger.info("option, value: %s, %s" % (option, repr(value)))
 				if ("%s" % value) in ["True", "False"]:
 					value = 1 if value else 0
 				if option == "machine_type" and (value == "" or value == "undefined"):
@@ -70,7 +71,7 @@ class IniParser():
 				if sectionname not in self.idx:
 					self.idx[sectionname] = OrderedDict()
 				line = self.idx[sectionname].get(option)
-				if value == '' or value == 'undefined':
+				if value == '' or value == 'undefined' or value == 'None':
 					# means delete
 					if line is not None:
 						del self.idx[sectionname][option]
