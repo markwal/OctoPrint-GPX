@@ -38,8 +38,10 @@ class IniParser():
 				else:
 					m = self._regex_name_value.match(line)
 					if m:
-						ini[sectionname][m.group(1).strip()] = m.group(3)
-						idx[sectionname][m.group(1).strip()] = line
+						itemname = m.group(1).strip()
+						if not itemname == 'None':
+							ini[sectionname][m.group(1).strip()] = m.group(3)
+							idx[sectionname][m.group(1).strip()] = line
 					else:
 						self.counter += 1
 						idx[sectionname][self.counter] = line
@@ -63,7 +65,7 @@ class IniParser():
 				self._logger.info("option, value: %s, %s" % (option, repr(value)))
 				if ("%s" % value) in ["True", "False"]:
 					value = 1 if value else 0
-				if option == "machine_type" and (value == "" or value == "undefined"):
+				if option == "machine_type" and (value == "" or value == "undefined" or value == "None"):
 					value = "r2"
 				if sectionname not in self.ini:
 					self.ini[sectionname] = {}
