@@ -6,12 +6,16 @@ __license__ = 'GNU Affero General Public License http://www.gnu.org/licenses/agp
 import os
 import logging
 import time
-import Queue
+try:
+	import queue
+except ImportError:
+	import Queue as queue
 import re
 import datetime
 
 from octoprint.filemanager import FileDestinations
 
+gpx = False
 try:
 	import gpx
 except:
@@ -23,14 +27,14 @@ class GpxPrinter():
 		self._settings = gpx_plugin._settings
 		self._printer = gpx_plugin._printer
 		self._bot_cancelled = False
-		if not gpx:
+		if gpx is None:
 			self._logger.warn("Unable to import gpx module")
 			raise ValueError("Unable to import gpx module")
 		self.port = port
 		self.baudrate = self._baudrate = baudrate
 		self.timeout = timeout
 		self._logger.info("GPXPrinter created, port: %s, baudrate: %s" % (self.port, self.baudrate))
-		self.outgoing = Queue.Queue()
+		self.outgoing = queue.Queue()
 		self.baudrateError = False;
 		data_folder = gpx_plugin.get_plugin_data_folder()
 		self.profile_path = os.path.join(data_folder, "gpx.ini")
@@ -102,6 +106,9 @@ class GpxPrinter():
 		try:
 			rval = len(data)
 			data = data.strip()
+			str_data = data
+			if not isinstance(str_data, str):
+				str_data = data.decode('utf-8')
 			if (self.baudrate != self._baudrate):
 				try:
 					self._baudrate = self.baudrate
@@ -116,7 +123,7 @@ class GpxPrinter():
 			# look for a line number
 			# line number means OctoPrint is streaming gcode at us (gpx.ini flavor)
 			# no line number means OctoPrint is generating the gcode (reprap flavor)
-			match = self._regex_linenumber.match(data)
+			match = self._regex_linenumber.match(str_data)
 
 			# try to talk to the bot
 			try:
@@ -128,7 +135,7 @@ class GpxPrinter():
 				bo_retries = 0
 				while True:
 					try:
-						self._append(gpx.write("%s" % data))
+						self._append(gpx.write(data))
 						break
 					except gpx.BufferOverflow:
 						bo_retries += 1
@@ -153,7 +160,7 @@ class GpxPrinter():
 			self._bot_reports_build_cancelled()
 		return rval
 
-	def readline(self):
+	def readline_str(self):
 		try:
 			if (self.baudrateError):
 				if (self._baudrate != self.baudrate):
@@ -162,7 +169,7 @@ class GpxPrinter():
 
 			try:
 				return self.outgoing.get_nowait()
-			except Queue.Empty:
+			except queue.Empty:
 				pass
 
 			if gpx.listing_files():
@@ -172,12 +179,15 @@ class GpxPrinter():
 				timeout = 2 if gpx.waiting else self.timeout
 				try:
 					return self.outgoing.get(timeout=timeout)
-				except Queue.Empty:
+				except queue.Empty:
 					self._append(gpx.readnext())
 
 		except gpx.CancelBuild:
 			self._bot_reports_build_cancelled()
 			return '// echo: build cancelled'
+
+	def readline(self):
+		return self.readline_str().encode('utf-8')
 
 	def cancel(self):
 		self._logger.warn("Cancelling build %s", "by the printer" if self._bot_cancelled else "by OctoPrint")

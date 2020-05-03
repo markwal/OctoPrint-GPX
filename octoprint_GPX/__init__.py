@@ -115,7 +115,7 @@ class GPXPlugin(
 				try:
 					import glob
 					ports = glob.glob("/dev/serial/by-id/*MakerBot_Industries_The_Replicator*")
-					if ports:
+					if ports is not None:
 						port = os.path.normpath(os.path.join("/dev/serial/by-id/", os.readlink(ports[0])))
 				except:
 					# oh well, it was worth a try
@@ -163,7 +163,7 @@ class GPXPlugin(
 			self._settings.set_float(["connection_pause"], float(self._settings.get(["connection_pause"])))
 		except TypeError:
 			self._settings.set_float(["connection_pause"], 2.0)
-		if self.printer:
+		if self.printer is not None:
 			self.printer.refresh_ini()
 
 	# EventHandlerPlugin
@@ -173,7 +173,7 @@ class GPXPlugin(
 		# ten minutes to heat up the print bed; we circumvent here by telling
 		# the bot to stop
 		if event == Events.PRINT_CANCELLED:
-			if self.printer:
+			if self.printer is not None:
 				# jump the queue with an abort
 				self.printer.cancel()
 
@@ -183,7 +183,7 @@ class GPXPlugin(
 		# attempt to override here with OctoPrint's notion
 		# avoid 100% since that triggers end_build and we'll let that happen
 		# explicitly
-		if progress < 100 and self.override_progress and self.printer:
+		if progress < 100 and self.override_progress and self.printer is not None:
 			self.printer.progress(progress)
 
 	# gcode processing hook
@@ -459,6 +459,7 @@ def __plugin_load__():
 		}
 
 __plugin_name__ = "GPX"
+__plugin_pythoncompat__ = ">=2.7,<4"
 
 from ._version import get_versions
 __version__ = get_versions()['version']

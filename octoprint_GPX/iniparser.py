@@ -23,25 +23,26 @@ class IniParser():
 		self.idx = idx = OrderedDict()
 		self.lines = lines = []
 		self.counter = 0
-		sectionname = None
+		sectionname = "None"
 		ini[sectionname] = {}
 		idx[sectionname] = OrderedDict()
 		with open(self.filename) as inifile:
 			for line in inifile:
 				line = line.strip()
+				self._logger.info(line)
 				lines.append(line);
 				m = self._regex_section.match(line)
-				if m:
+				if m is not None:
 					sectionname = m.group(1)
 					ini[sectionname] = {}
 					idx[sectionname] = OrderedDict()
 				else:
 					m = self._regex_name_value.match(line)
-					if m:
+					if m is not None:
 						itemname = m.group(1).strip()
 						if not itemname == 'None':
-							ini[sectionname][m.group(1).strip()] = m.group(3)
-							idx[sectionname][m.group(1).strip()] = line
+							ini[sectionname][itemname] = m.group(3)
+							idx[sectionname][itemname] = line
 					else:
 						self.counter += 1
 						idx[sectionname][self.counter] = line
@@ -53,13 +54,14 @@ class IniParser():
 #			ini[section] = {}
 #			for (name, value) in config.items(section):
 #				ini[section][name] = value
+		self._logger.info(repr(ini))
 		return ini
 
 	def update(self, ini):
-		if not ini.items:
-			raise ValueError("Malformed update")
+		if ini.items is None:
+			raise ValueE("Malformed update")
 		for sectionname, section in ini.items():
-			if not section.items:
+			if section.items is None:
 				raise ValueError("Invalid section")
 			for option, value in section.items():
 				self._logger.info("option, value: %s, %s" % (option, repr(value)))
@@ -73,14 +75,15 @@ class IniParser():
 				if sectionname not in self.idx:
 					self.idx[sectionname] = OrderedDict()
 				line = self.idx[sectionname].get(option)
-				if value == '' or value == 'undefined' or value == 'None':
+				if value == '' or value == 'undefined' or value == 'None' or value is None:
+					self._logger.info("deleteing [{0}][{1}]".format(sectionname, option))
 					# means delete
 					if line is not None:
 						del self.idx[sectionname][option]
 					continue
 				if line is not None:
 					m = self._regex_name_value.match(line)
-					if m:
+					if m is not None:
 						g = m.groups("")
 						g = g[0:2] + (value,) + g[3:]
 						self.idx[sectionname][option] = "%s=%s%s%s%s" % g
@@ -108,13 +111,13 @@ class IniParser():
 
 	def write(self):
 		self._logger.info("Open %s" % self.filename)
-		with open(self.filename, 'wb') as inifile:
+		with open(self.filename, 'w') as inifile:
 			self._logger.info("Write %s" % self.filename)
 			count = 0
 			if None in self.idx:
 				count += self._write_section(inifile, self.idx[None])
 			for sectionname, section in self.idx.items():
-				if sectionname is not None:
+				if sectionname is not None and sectionname != 'None':
 					inifile.write("[%s]\n" % sectionname)
 					count += self._write_section(inifile, section)
 		if count == 0:
@@ -123,10 +126,10 @@ class IniParser():
 
 	def dump(self):
 		for sectionname, section in self.idx.items():
-			if sectionname is not None:
-				print "[%s]" % sectionname
+			if sectionname is not None and sectionname != 'None':
+				print("[{0}]".format(sectionname))
 			for option, line in section.items():
-				print line
+				print(line)
 
 	def get(self, sectionname, itemname):
 		if sectionname in self.ini and itemname in self.ini[sectionname]:
