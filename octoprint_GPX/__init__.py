@@ -115,7 +115,7 @@ class GPXPlugin(
 				try:
 					import glob
 					ports = glob.glob("/dev/serial/by-id/*MakerBot_Industries_The_Replicator*")
-					if ports is not None:
+					if ports:
 						port = os.path.normpath(os.path.join("/dev/serial/by-id/", os.readlink(ports[0])))
 				except:
 					# oh well, it was worth a try
