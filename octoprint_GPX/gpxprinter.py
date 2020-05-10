@@ -17,7 +17,7 @@ from octoprint.filemanager import FileDestinations
 
 gpx = False
 try:
-	import gpx
+	import gcodex3g as gpx
 except:
 	pass
 

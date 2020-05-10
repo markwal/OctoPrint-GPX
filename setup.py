@@ -92,7 +92,7 @@ def params():
 	}
 
 	ext_modules = [
-		setuptools.Extension('gpx',
+		setuptools.Extension('gcodex3g',
 		sources = plugin_ext_sources,
 		extra_compile_args = ['-DGPX_VERSION="\\"OctoPrint\\""', '-DSERIAL_SUPPORT', '-fvisibility=hidden', '-IGPX/build/src/shared', '-IGPX/src/shared', '-IGPX/src/gpx'],
 		extra_link_args = ['-fvisibility=hidden'])

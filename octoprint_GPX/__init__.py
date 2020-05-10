@@ -14,7 +14,7 @@ from octoprint.events import Events
 from octoprint.server import admin_permission
 
 try:
-	import gpx
+	import gcodex3g as gpx
 except:
 	pass
 
