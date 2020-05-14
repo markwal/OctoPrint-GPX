@@ -187,7 +187,7 @@ class GpxPrinter():
 			return '// echo: build cancelled'
 
 	def readline(self):
-		return self.readline_str().encode('utf-8')
+		return self.readline_str().encode('ascii', errors='ignore')
 
 	def cancel(self):
 		self._logger.warn("Cancelling build %s", "by the printer" if self._bot_cancelled else "by OctoPrint")
