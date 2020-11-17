@@ -41,6 +41,8 @@ class GPXPlugin(
 
 	def __init__(self):
 		self._initialized = False
+		self.override_progress = False
+		self.printer = None
 
 	# internal initialize
 	# we do it this weird way because __init__ gets called before the injected

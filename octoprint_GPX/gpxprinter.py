@@ -191,15 +191,6 @@ class GpxPrinter():
 
 	def cancel(self):
 		self._logger.warn("Cancelling build %s", "by the printer" if self._bot_cancelled else "by OctoPrint")
-		if not self._bot_cancelled:
-			if self._settings.get_boolean(['extended_stop_instead_of_abort']):
-				# make sure if you use this you have your own "gcode on cancel"
-				# that turns off motors and heaters
-				self._logger.debug("stop")
-				self._append(gpx.stop())
-			else:
-				self._logger.debug("abort")
-				self._append(gpx.abort())
 		self._bot_cancelled = False;
 
 	def close(self):
