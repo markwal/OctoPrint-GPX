@@ -8,7 +8,7 @@ all: GPX/build
 		make -C $$dir $@; \
 		echo "Exiting $$dir"; \
 	done
-	python setup.py develop
+	python3 setup.py develop
 
 GPX/build: GPX/configure
 	mkdir -p GPX/build
