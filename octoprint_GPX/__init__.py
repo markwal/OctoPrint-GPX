@@ -399,7 +399,7 @@ class GPXPlugin(
 			try:
 				response[eepromid] = gpx.read_eeprom(eepromid)
 			except ValueError:
-				SELF._LOGGER.WARN("UNKNOWN EEPROM id %s" % eepromid)
+				self._logger.warn("UNKNOWN EEPROM id %s" % eepromid)
 			except gpx.UnknownFirmware:
 				self._logger.warn("Unrecognized firmware flavor or version.")
 				return make_response("Unrecognize firmware flavor or version", 400)
