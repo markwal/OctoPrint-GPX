@@ -250,15 +250,15 @@ $(function() {
                     ko.mapping.fromJS(response, self.eeprom);
                     bit = 0x1;
                     for (axis in self.axes) {
-                        self.steps_per_mm[axis](self.eeprom["AXIS_STEPS_PER_MM_" + axis]() / 1000000.0);
+                        self.steps_per_mm[axis](self.eeprom["AXIS_STEPS_PER_MM_" + axis]());
                         self.home[axis](self.eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis]() / self.steps_per_mm[axis]());
                         self.invert_axis[axis](!!(self.eeprom.AXIS_INVERSION() & bit));
                         self.invert_endstop[axis](!!(self.eeprom.ENDSTOP_INVERSION() & bit));
                         bit <<= 1;
                     }
                     self.z_hold(!(self.eeprom.AXIS_INVERSION() & 0x80));
-                    self.jkn_k(self.eeprom.JKN_ADVANCE_K() / 100000.0);
-                    self.jkn_k2(self.eeprom.JKN_ADVANCE_K2() / 100000.0);
+                    self.jkn_k(self.eeprom.JKN_ADVANCE_K());
+                    self.jkn_k2(self.eeprom.JKN_ADVANCE_K2());
                     self.toolhead_offset.X(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X() /self.steps_per_mm.X());
                     self.toolhead_offset.Y(self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y() /self.steps_per_mm.Y());
                     self.max_zdelta(self.eeprom.ALEVEL_MAX_ZDELTA() / self.steps_per_mm.Z());
@@ -287,8 +287,8 @@ $(function() {
             if (!self.z_hold()) axis_inversion |= 0x80;
             self.eeprom.AXIS_INVERSION(axis_inversion);
             self.eeprom.ENDSTOP_INVERSION(endstop_inversion);
-            self.eeprom.JKN_ADVANCE_K((self.jkn_k() * 100000) | 0);
-            self.eeprom.JKN_ADVANCE_K2((self.jkn_k2() * 100000) | 0);
+            self.eeprom.JKN_ADVANCE_K(self.jkn_k());
+            self.eeprom.JKN_ADVANCE_K2(self.jkn_k2());
             self.eeprom.TOOLHEAD_OFFSET_SETTINGS_X((self.toolhead_offset.X() * self.steps_per_mm.X()) | 0);
             self.eeprom.TOOLHEAD_OFFSET_SETTINGS_Y((self.toolhead_offset.Y() * self.steps_per_mm.Y()) | 0);
             self.eeprom.ALEVEL_MAX_ZDELTA((self.max_zdelta() * self.steps_per_mm.Z()) | 0);
