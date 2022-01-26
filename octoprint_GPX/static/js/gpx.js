@@ -280,6 +280,7 @@ $(function() {
             var endstop_inversion = self.eeprom.ENDSTOP_INVERSION() & 0xe0;
             for (axis in self.axes) {
                 self.eeprom["AXIS_HOME_POSITIONS_STEPS_" + axis]((self.home[axis]() * self.steps_per_mm[axis]()) | 0);
+                self.eeprom["AXIS_STEPS_PER_MM_" + axis](self.steps_per_mm[axis]());
                 if (self.invert_axis[axis]()) axis_inversion |= bit;
                 if (self.invert_endstop[axis]()) endstop_inversion |= bit;
                 bit <<= 1;
