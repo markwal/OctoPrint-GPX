@@ -133,6 +133,7 @@ class GpxPrinter():
 				# loop sending until the queue isn't full
 				timeout_retries = 0
 				bo_retries = 0
+				write_retries = 0
 				while True:
 					try:
 						self._append(gpx.write(data))
@@ -152,6 +153,11 @@ class GpxPrinter():
 						timeout_retries += 1
 						if (timeout_retries >= 5):
 							raise
+					except OSError:
+						write_retries += 1
+						if (write_retries >= 5):
+							raise
+						time.sleep(0.1) # 100 ms
 
 			finally:
 				if match is None:
