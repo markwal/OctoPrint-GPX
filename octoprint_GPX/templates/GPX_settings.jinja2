@@ -295,6 +295,9 @@
                     {% set axis_name = axis + ' axis' + gpx_axis_suffix(axis) %}
                     {{ gpx_checkbox('invert_axis.' + axis, _('Invert {}').format(axis_name), _('If an axis is moving in the wrong direction, toggle that axis')) }}
                     {% endfor %}
+                    {% for axis in axes %}
+                    {{ gpx_spinner_unit('steps_per_mm.' + axis, _('steps/mm'), 0.000001, 0, 0, _('{} Steps per mm').format(axis), _('The number of steps per mm')) }}
+                    {% endfor %}
                 </div>
             </div>
             <div id="gpx_eeprom_endstops" class="tab-pane">
